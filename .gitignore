@@ -3,7 +3,6 @@ HELP.md
 .gradle
 build/
 local.properties
-!gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**
 !**/src/test/**
 
@@ -41,3 +40,4 @@ out/
 *.zip
 *.tar.gz
 *.rar
+!gradle/wrapper/gradle-wrapper.jar
