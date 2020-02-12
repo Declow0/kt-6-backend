@@ -1,5 +1,6 @@
 package ru.netology.backend.repository
 
+import io.ktor.features.BadRequestException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.netology.backend.model.Post
@@ -8,15 +9,13 @@ import ru.netology.backend.model.exception.NotFoundException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class PostRepositoryHashMap : PostRepository {
-    private val repo = ConcurrentHashMap<UUID, Post>().apply {
-        val post = Post()
-        put(post.id, post)
-    }
+class PostRepositoryConcurrentHashMap : PostRepository {
+    private val repo = ConcurrentHashMap<UUID, Post>()
     private val mutex = Mutex()
 
     override fun getAll(): List<Post> {
         return repo.values
+            .onEach { it.views.incrementAndGet() }
             .sortedByDescending { it.createTime }
     }
 
@@ -39,12 +38,31 @@ class PostRepositoryHashMap : PostRepository {
         val postInRepo = repo[id] ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
             // change if (byMe = true and inc = false) or (byMe = false and inc = true)
-            if (postInRepo.favoriteByMe != increment) {
+            if (!postInRepo.favoriteByMe) {
                 val post: Post = postInRepo.copy(
-                    favorite = if (increment) postInRepo.favorite + 1 else postInRepo.favorite - 1,
-                    favoriteByMe = increment
+                    favorite = postInRepo.favorite + 1,
+                    favoriteByMe = false
                 )
                 repo[id] = post
+            } else {
+                throw BadRequestException("Already favorite")
+            }
+            return postInRepo
+        }
+    }
+
+    override suspend fun unfavorite(id: UUID): Post {
+        val postInRepo = repo[id] ?: throw NotFoundException(id)
+        mutex.withLock(postInRepo) {
+            // change if (byMe = true and inc = false) or (byMe = false and inc = true)
+            if (postInRepo.favoriteByMe) {
+                val post: Post = postInRepo.copy(
+                    favorite = postInRepo.favorite - 1,
+                    favoriteByMe = true
+                )
+                repo[id] = post
+            } else {
+                throw BadRequestException("Already unfavorite")
             }
             return postInRepo
         }

@@ -4,7 +4,6 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import io.ktor.routing.delete
 import io.ktor.routing.put
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
@@ -13,7 +12,7 @@ import ru.netology.backend.model.dto.PostRsDto
 import ru.netology.backend.repository.PostRepository
 import java.util.*
 
-class PostFavoriteController(application: Application) : AbstractKodeinController(application) {
+class PostShareController(application: Application) : AbstractKodeinController(application) {
     private val repo by kodein.instance<PostRepository>()
 
     override fun Route.getRoutes() {
@@ -23,18 +22,7 @@ class PostFavoriteController(application: Application) : AbstractKodeinControlle
 
             call.respond(
                 PostRsDto.fromModel(
-                    repo.favorite(UUID.fromString(idInput))
-                )
-            )
-        }
-
-        delete("/{id}") {
-            val idInput = call.parameters["id"]
-            idInput!!.isUUID()
-
-            call.respond(
-                PostRsDto.fromModel(
-                    repo.unfavorite(UUID.fromString(idInput))
+                    repo.share(UUID.fromString(idInput))
                 )
             )
         }

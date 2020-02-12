@@ -1,25 +1,23 @@
 package ru.netology.backend.config
 
-import io.ktor.features.BadRequestException
 import io.ktor.routing.Routing
 import io.ktor.routing.route
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
+import org.kodein.di.generic.eagerSingleton
 import org.kodein.di.generic.instance
-import org.kodein.di.generic.provider
-import org.kodein.di.generic.singleton
 import org.kodein.di.ktor.controller.controller
 import ru.netology.backend.controller.post.PostController
 import ru.netology.backend.controller.post.RepostController
 import ru.netology.backend.controller.post.attribute.PostFavoriteController
 import ru.netology.backend.repository.PostRepository
-import ru.netology.backend.repository.PostRepositoryHashMap
+import ru.netology.backend.repository.PostRepositoryConcurrentHashMap
 import javax.validation.Validation
 import javax.validation.Validator
 
 fun Kodein.MainBuilder.appConfig() {
-    bind<PostRepository>() with singleton { PostRepositoryHashMap() }
-    bind<Validator>() with provider { Validation.buildDefaultValidatorFactory().validator }
+    bind<PostRepository>() with eagerSingleton { PostRepositoryConcurrentHashMap() }
+    bind<Validator>() with eagerSingleton { Validation.buildDefaultValidatorFactory().validator }
 }
 
 fun Routing.controllerConfig() {
