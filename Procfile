@@ -1,0 +1,1 @@
+web: ./build/install/ru.netology.myapplication/bin/ru.netology.myapplication
