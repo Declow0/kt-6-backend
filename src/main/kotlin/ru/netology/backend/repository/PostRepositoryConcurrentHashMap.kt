@@ -37,11 +37,10 @@ class PostRepositoryConcurrentHashMap : PostRepository {
     override suspend fun favorite(id: UUID, increment: Boolean): Post {
         val postInRepo = repo[id] ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
-            // change if (byMe = true and inc = false) or (byMe = false and inc = true)
             if (!postInRepo.favoriteByMe) {
                 val post: Post = postInRepo.copy(
                     favorite = postInRepo.favorite + 1,
-                    favoriteByMe = false
+                    favoriteByMe = true
                 )
                 repo[id] = post
             } else {
@@ -58,7 +57,7 @@ class PostRepositoryConcurrentHashMap : PostRepository {
             if (postInRepo.favoriteByMe) {
                 val post: Post = postInRepo.copy(
                     favorite = postInRepo.favorite - 1,
-                    favoriteByMe = true
+                    favoriteByMe = false
                 )
                 repo[id] = post
             } else {

@@ -10,6 +10,7 @@ import org.kodein.di.ktor.controller.controller
 import ru.netology.backend.controller.post.PostController
 import ru.netology.backend.controller.post.RepostController
 import ru.netology.backend.controller.post.attribute.PostFavoriteController
+import ru.netology.backend.controller.post.attribute.PostShareController
 import ru.netology.backend.repository.PostRepository
 import ru.netology.backend.repository.PostRepositoryConcurrentHashMap
 import javax.validation.Validation
@@ -25,5 +26,6 @@ fun Routing.controllerConfig() {
         controller("/post") { PostController(instance()) }
         controller("/repost") { RepostController(instance()) }
         controller("/post/favorite") { PostFavoriteController(instance()) }
+        controller("/post/share") { PostShareController(instance()) }
     }
 }

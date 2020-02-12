@@ -52,7 +52,7 @@ class PostController(application: Application) : AbstractKodeinController(applic
                         address = post.address,
                         location = post.location,
                         youtubeId = post.youtubeId,
-                        commercialContent = java.net.URL(post.commercialContent)
+                        commercialContent = if (post.commercialContent != null) java.net.URL(post.commercialContent) else null
                     )
                 )
             )

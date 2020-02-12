@@ -37,6 +37,8 @@ dependencies {
     implementation "ch.qos.logback:logback-classic:$logback_version"
     implementation "org.hibernate.validator:hibernate-validator:$hibernate_validator_version"
     implementation "org.glassfish:javax.el:$javax_el_version"
+    testCompile "io.ktor:ktor-server-test-host:$ktor_version"
+    testCompile "com.jayway.jsonpath:json-path:2.4.0"
 }
 
 application {

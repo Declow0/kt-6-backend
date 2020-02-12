@@ -10,18 +10,20 @@ import ru.netology.backend.model.exception.NotFoundException
 
 fun StatusPages.Configuration.exceptionHandler() {
     exception<BadRequestException> {
-        call.respond(HttpStatusCode.BadRequest, it.localizedMessage)
+        call.respond(HttpStatusCode.BadRequest, it.getMessage())
     }
 
     exception<AlreadyExistException> {
-        call.respond(HttpStatusCode.BadRequest, it.localizedMessage)
+        call.respond(HttpStatusCode.BadRequest, it.getMessage())
     }
 
     exception<NotFoundException> {
-        call.respond(HttpStatusCode.NotFound, it.localizedMessage)
+        call.respond(HttpStatusCode.NotFound, it.getMessage())
     }
 
     exception<Throwable> {
-        call.respond(HttpStatusCode.InternalServerError, it.localizedMessage)
+        call.respond(HttpStatusCode.InternalServerError, it.getMessage())
     }
 }
+
+fun Throwable.getMessage(): String = this.localizedMessage ?: this.message ?: ""

@@ -34,7 +34,7 @@ class RepostController(application: Application) : AbstractKodeinController(appl
                             address = repost.address,
                             location = repost.location,
                             youtubeId = repost.youtubeId,
-                            commercialContent = java.net.URL(repost.commercialContent),
+                            commercialContent = if (repost.commercialContent != null) java.net.URL(repost.commercialContent) else null,
                             original = UUID.fromString(repost.original)
                         )
                     )
