@@ -1,6 +1,6 @@
 package ru.netology.backend.config
 
-import io.ktor.features.BadRequestException
+import ru.netology.backend.model.exception.BadRequestException
 import java.util.regex.Pattern
 import javax.validation.Validator
 

@@ -1,10 +1,10 @@
 package ru.netology.backend.repository
 
-import io.ktor.features.BadRequestException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.netology.backend.model.Post
 import ru.netology.backend.model.exception.AlreadyExistException
+import ru.netology.backend.model.exception.BadRequestException
 import ru.netology.backend.model.exception.NotFoundException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap

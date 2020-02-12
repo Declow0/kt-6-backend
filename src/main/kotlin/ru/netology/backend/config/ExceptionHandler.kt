@@ -1,11 +1,11 @@
 package ru.netology.backend.config
 
 import io.ktor.application.call
-import io.ktor.features.BadRequestException
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import ru.netology.backend.model.exception.AlreadyExistException
+import ru.netology.backend.model.exception.BadRequestException
 import ru.netology.backend.model.exception.NotFoundException
 
 fun StatusPages.Configuration.exceptionHandler() {
