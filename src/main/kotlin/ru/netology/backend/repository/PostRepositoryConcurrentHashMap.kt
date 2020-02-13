@@ -13,16 +13,20 @@ class PostRepositoryConcurrentHashMap : PostRepository {
     private val repo = ConcurrentHashMap<UUID, Post>()
     private val mutex = Mutex()
 
-    override fun getAll(): List<Post> {
+    override fun getAllAndView(): List<Post> {
         return repo.values
             .onEach { it.views.incrementAndGet() }
             .sortedByDescending { it.createTime }
     }
 
-    override fun get(id: UUID): Post {
-        val post = repo[id] ?: throw NotFoundException(id)
+    override fun getAndView(id: UUID): Post {
+        val post = get(id)
         post.views.incrementAndGet()
         return post
+    }
+
+    override fun get(id: UUID): Post {
+        return repo[id] ?: throw NotFoundException(id)
     }
 
     override fun put(post: Post): Post {
@@ -35,7 +39,7 @@ class PostRepositoryConcurrentHashMap : PostRepository {
     }
 
     override suspend fun favorite(id: UUID, increment: Boolean): Post {
-        val postInRepo = repo[id] ?: throw NotFoundException(id)
+        val postInRepo = get(id)
         mutex.withLock(postInRepo) {
             if (!postInRepo.favoriteByMe) {
                 val post: Post = postInRepo.copy(
@@ -51,9 +55,8 @@ class PostRepositoryConcurrentHashMap : PostRepository {
     }
 
     override suspend fun unfavorite(id: UUID): Post {
-        val postInRepo = repo[id] ?: throw NotFoundException(id)
+        val postInRepo = get(id)
         mutex.withLock(postInRepo) {
-            // change if (byMe = true and inc = false) or (byMe = false and inc = true)
             if (postInRepo.favoriteByMe) {
                 val post: Post = postInRepo.copy(
                     favorite = postInRepo.favorite - 1,
@@ -68,7 +71,7 @@ class PostRepositoryConcurrentHashMap : PostRepository {
     }
 
     override suspend fun share(id: UUID): Post {
-        val postInRepo = repo[id] ?: throw NotFoundException(id)
+        val postInRepo = get(id)
         mutex.withLock(postInRepo) {
             if (!postInRepo.shareByMe) {
                 val post: Post = postInRepo.copy(
@@ -82,7 +85,7 @@ class PostRepositoryConcurrentHashMap : PostRepository {
     }
 
     override suspend fun delete(id: UUID) {
-        val post = repo[id] ?: throw NotFoundException(id)
+        val post = get(id)
         mutex.withLock(post) {
             repo.remove(id)
         }

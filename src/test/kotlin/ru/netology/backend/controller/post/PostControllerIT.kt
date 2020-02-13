@@ -9,6 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import net.minidev.json.JSONArray
 import org.junit.Test
 import ru.netology.backend.config.UUIDPatternString
 import ru.netology.backend.config.module
@@ -46,6 +47,134 @@ class PostControllerIT {
             assertEquals("WhWc3b3KhnY", JsonPath.read(json, "$.youtubeId"))
             assertTrue(JsonPath.read<String>(json, "$.id").matches(Regex(UUIDPatternString)))
             assertEquals(0, JsonPath.read(json, "$.views"))
+        }
+
+        with(
+            handleRequest(HttpMethod.Delete, "/api/v1/post/$id") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val json = response.content
+            assertTrue(JsonPath.read(json, "$"))
+        }
+    }
+
+    @Test
+    fun `Create Post Empty Content`() = withTestApplication(Application::module) {
+        with(
+            handleRequest(HttpMethod.Post, "/api/v1/post") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(this.javaClass.getResource("/create-post-empty-content.json").readText())
+            }
+        ) {
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+            assertEquals("content: не должно быть пустым", response.content)
+        }
+    }
+
+    @Test
+    fun `Create Post Incorrect youtubeId`() = withTestApplication(Application::module) {
+        with(
+            handleRequest(HttpMethod.Post, "/api/v1/post") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(this.javaClass.getResource("/create-post-incorrect-youtube-id.json").readText())
+            }
+        ) {
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+            assertEquals("youtubeId: должно соответствовать \"[a-zA-Z0-9_-]{11}\"", response.content)
+        }
+    }
+
+    @Test
+    fun `Delete Non Exist Post`() = withTestApplication(Application::module) {
+        val id = "46813418-0f33-4f2b-88ac-be4ca4b67ee8"
+        with(
+            handleRequest(HttpMethod.Delete, "/api/v1/post/$id") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+        ) {
+            assertEquals(HttpStatusCode.NotFound, response.status())
+            assertEquals("Not found post with id: $id", response.content)
+        }
+    }
+
+    @Test
+    fun `Get Non Exist Post`() = withTestApplication(Application::module) {
+        val id = "46813418-0f33-4f2b-88ac-be4ca4b67ee8"
+        with(
+            handleRequest(HttpMethod.Get, "/api/v1/post/$id") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+        ) {
+            assertEquals(HttpStatusCode.NotFound, response.status())
+            assertEquals("Not found post with id: $id", response.content)
+        }
+    }
+
+    @Test
+    fun `Get with Created Post Increment View`() = withTestApplication(Application::module) {
+        var id = ""
+        with(
+            handleRequest(HttpMethod.Post, "/api/v1/post") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(this.javaClass.getResource("/create-post.json").readText())
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            id = JsonPath.read(response.content, "$.id")
+        }
+
+        with(
+            handleRequest(HttpMethod.Get, "/api/v1/post/$id") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(1, JsonPath.read(response.content, "$.views"))
+        }
+
+        with(
+            handleRequest(HttpMethod.Get, "/api/v1/post/$id") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(2, JsonPath.read(response.content, "$.views"))
+        }
+
+        with(
+            handleRequest(HttpMethod.Delete, "/api/v1/post/$id") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            val json = response.content
+            assertTrue(JsonPath.read(json, "$"))
+        }
+    }
+
+    @Test
+    fun `Get All Created Post Increment View`() = withTestApplication(Application::module) {
+        var id = ""
+        with(
+            handleRequest(HttpMethod.Post, "/api/v1/post") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                setBody(this.javaClass.getResource("/create-post.json").readText())
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            id = JsonPath.read(response.content, "$.id")
+        }
+
+        with(
+            handleRequest(HttpMethod.Get, "/api/v1/post") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(1, JsonPath.read<JSONArray>(response.content, "$[*].id").size)
+            assertEquals(1, JsonPath.read(response.content, "$[0].views"))
         }
 
         with(

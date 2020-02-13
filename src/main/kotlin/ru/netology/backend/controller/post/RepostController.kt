@@ -12,6 +12,8 @@ import ru.netology.backend.config.validate
 import ru.netology.backend.model.Post
 import ru.netology.backend.model.dto.PostRsDto
 import ru.netology.backend.model.dto.RepostRqDto
+import ru.netology.backend.model.exception.BadRequestException
+import ru.netology.backend.model.exception.NotFoundException
 import ru.netology.backend.repository.PostRepository
 import java.util.*
 import javax.validation.Validator
@@ -24,6 +26,12 @@ class RepostController(application: Application) : AbstractKodeinController(appl
         post {
             val repost = call.receive<RepostRqDto>()
             repost.validate(validator)
+            val uuid = UUID.fromString(repost.original)
+            try {
+                repo.get(uuid)
+            } catch (e: NotFoundException) {
+                throw BadRequestException("Original Post Not Found")
+            }
 
             call.respond(
                 PostRsDto.fromModel(
@@ -35,7 +43,7 @@ class RepostController(application: Application) : AbstractKodeinController(appl
                             location = repost.location,
                             youtubeId = repost.youtubeId,
                             commercialContent = if (repost.commercialContent != null) java.net.URL(repost.commercialContent) else null,
-                            original = UUID.fromString(repost.original)
+                            original = uuid
                         )
                     )
                 )

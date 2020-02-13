@@ -26,7 +26,7 @@ class PostController(application: Application) : AbstractKodeinController(applic
     override fun Route.getRoutes() {
         get {
             call.respond(
-                repo.getAll()
+                repo.getAllAndView()
                     .map(PostRsDto.Companion::fromModel)
             )
         }
@@ -35,7 +35,7 @@ class PostController(application: Application) : AbstractKodeinController(applic
             val idInput = call.parameters["id"]
             idInput!!.isUUID()
             val id = UUID.fromString(idInput)
-            val post = repo.get(id)
+            val post = repo.getAndView(id)
 
             call.respond(PostRsDto.fromModel(post))
         }

@@ -4,7 +4,8 @@ import ru.netology.backend.model.Post
 import java.util.*
 
 interface PostRepository {
-    fun getAll(): List<Post>
+    fun getAllAndView(): List<Post>
+    fun getAndView(id: UUID): Post
     fun get(id: UUID): Post
     fun put(post: Post): Post
     suspend fun favorite(id: UUID, increment: Boolean = true): Post

@@ -13,7 +13,9 @@ fun <T : Any> T.validate(validator: Validator) {
         .takeIf { it.isNotEmpty() }
         ?.let {
             throw BadRequestException(
-                it.joinToString("\n") { constraintViolation -> constraintViolation.message }
+                it.joinToString("\n") { constraintViolation ->
+                    "${constraintViolation?.propertyPath?.toString()}: ${constraintViolation.message}"
+                }
             )
         }
 }
