@@ -22,7 +22,7 @@ class PostControllerIT {
 
     @Test
     fun `Create Post`() = withTestApplication(Application::module) {
-        var id = ""
+        var id: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -114,7 +114,7 @@ class PostControllerIT {
 
     @Test
     fun `Get with Created Post Increment View`() = withTestApplication(Application::module) {
-        var id = ""
+        var id: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -156,7 +156,7 @@ class PostControllerIT {
 
     @Test
     fun `Get All Created Post Increment View`() = withTestApplication(Application::module) {
-        var id = ""
+        var id: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())

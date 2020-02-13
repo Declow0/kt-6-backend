@@ -47,10 +47,10 @@ class PostRepositoryConcurrentHashMap : PostRepository {
                     favoriteByMe = true
                 )
                 repo[id] = post
+                return post
             } else {
                 throw BadRequestException("Already favorite")
             }
-            return postInRepo
         }
     }
 
@@ -63,10 +63,10 @@ class PostRepositoryConcurrentHashMap : PostRepository {
                     favoriteByMe = false
                 )
                 repo[id] = post
+                return post
             } else {
                 throw BadRequestException("Already unfavorite")
             }
-            return postInRepo
         }
     }
 
@@ -79,8 +79,10 @@ class PostRepositoryConcurrentHashMap : PostRepository {
                     shareByMe = true
                 )
                 repo[id] = post
+                return post
+            } else {
+                throw BadRequestException("Already share")
             }
-            return postInRepo
         }
     }
 

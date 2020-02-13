@@ -63,7 +63,7 @@ class RepostControllerIT {
 
     @Test
     fun `Create Repost`() = withTestApplication(Application::module) {
-        var original = ""
+        var original: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -81,7 +81,7 @@ class RepostControllerIT {
         }
         """.trimIndent()
 
-        var repost = ""
+        var repost: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/repost") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
