@@ -8,12 +8,11 @@ import io.ktor.routing.put
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.isUUID
-import ru.netology.backend.model.dto.PostRsDto
-import ru.netology.backend.repository.PostRepository
+import ru.netology.backend.service.PostService
 import java.util.*
 
 class PostShareController(application: Application) : AbstractKodeinController(application) {
-    private val repo by kodein.instance<PostRepository>()
+    private val service by kodein.instance<PostService>()
 
     override fun Route.getRoutes() {
         put("/{id}") {
@@ -21,9 +20,7 @@ class PostShareController(application: Application) : AbstractKodeinController(a
             idInput!!.isUUID()
 
             call.respond(
-                PostRsDto.fromModel(
-                    repo.share(UUID.fromString(idInput))
-                )
+                service.share(UUID.fromString(idInput))
             )
         }
     }

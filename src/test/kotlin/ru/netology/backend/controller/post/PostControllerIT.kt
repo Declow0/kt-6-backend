@@ -21,7 +21,7 @@ import kotlin.test.assertTrue
 class PostControllerIT {
 
     @Test
-    fun `Create Post`() = withTestApplication(Application::module) {
+    fun `Create Post`() = ru.netology.backend.withTestApplication {
         var id: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {

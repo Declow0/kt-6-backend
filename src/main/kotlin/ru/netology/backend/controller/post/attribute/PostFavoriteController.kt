@@ -9,12 +9,11 @@ import io.ktor.routing.put
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.isUUID
-import ru.netology.backend.model.dto.PostRsDto
-import ru.netology.backend.repository.PostRepository
+import ru.netology.backend.service.PostService
 import java.util.*
 
 class PostFavoriteController(application: Application) : AbstractKodeinController(application) {
-    private val repo by kodein.instance<PostRepository>()
+    private val service by kodein.instance<PostService>()
 
     override fun Route.getRoutes() {
         put("/{id}") {
@@ -22,9 +21,7 @@ class PostFavoriteController(application: Application) : AbstractKodeinControlle
             idInput!!.isUUID()
 
             call.respond(
-                PostRsDto.fromModel(
-                    repo.favorite(UUID.fromString(idInput))
-                )
+                service.favorite(UUID.fromString(idInput))
             )
         }
 
@@ -33,9 +30,7 @@ class PostFavoriteController(application: Application) : AbstractKodeinControlle
             idInput!!.isUUID()
 
             call.respond(
-                PostRsDto.fromModel(
-                    repo.unfavorite(UUID.fromString(idInput))
-                )
+                service.unfavorite(UUID.fromString(idInput))
             )
         }
     }

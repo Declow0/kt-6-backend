@@ -12,22 +12,19 @@ import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.isUUID
 import ru.netology.backend.config.validate
-import ru.netology.backend.model.Post
 import ru.netology.backend.model.dto.PostRqDto
-import ru.netology.backend.model.dto.PostRsDto
-import ru.netology.backend.repository.PostRepository
+import ru.netology.backend.service.PostService
 import java.util.*
 import javax.validation.Validator
 
 class PostController(application: Application) : AbstractKodeinController(application) {
-    private val repo by kodein.instance<PostRepository>()
+    private val service by kodein.instance<PostService>()
     private val validator by kodein.instance<Validator>()
 
     override fun Route.getRoutes() {
         get {
             call.respond(
-                repo.getAllAndView()
-                    .map(PostRsDto.Companion::fromModel)
+                service.getAllAndView()
             )
         }
 
@@ -35,9 +32,7 @@ class PostController(application: Application) : AbstractKodeinController(applic
             val idInput = call.parameters["id"]
             idInput!!.isUUID()
             val id = UUID.fromString(idInput)
-            val post = repo.getAndView(id)
-
-            call.respond(PostRsDto.fromModel(post))
+            call.respond(service.getAndView(id))
         }
 
         post {
@@ -45,23 +40,14 @@ class PostController(application: Application) : AbstractKodeinController(applic
             post.validate(validator)
 
             call.respond(
-                repo.put(
-                    Post(
-                        createdUser = post.createdUser,
-                        content = post.content,
-                        address = post.address,
-                        location = post.location,
-                        youtubeId = post.youtubeId,
-                        commercialContent = if (post.commercialContent != null) java.net.URL(post.commercialContent) else null
-                    )
-                )
+                service.put(post)
             )
         }
 
         delete("/{id}") {
             val idInput = call.parameters["id"]
             idInput!!.isUUID()
-            repo.delete(UUID.fromString(idInput))
+            service.delete(UUID.fromString(idInput))
 
             call.respond(true)
         }
