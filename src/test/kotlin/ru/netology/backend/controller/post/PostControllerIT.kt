@@ -1,18 +1,17 @@
 package ru.netology.backend.controller.post
 
 import com.jayway.jsonpath.JsonPath
-import io.ktor.application.Application
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
 import net.minidev.json.JSONArray
 import org.junit.Test
+import ru.netology.backend.addAuthToken
 import ru.netology.backend.config.UUIDPatternString
-import ru.netology.backend.config.module
+import ru.netology.backend.withTestApplication
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -21,11 +20,12 @@ import kotlin.test.assertTrue
 class PostControllerIT {
 
     @Test
-    fun `Create Post`() = ru.netology.backend.withTestApplication {
+    fun `Create Post`() = withTestApplication {
         var id: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(this.javaClass.getResource("/create-post.json").readText())
             }
         ) {
@@ -52,6 +52,7 @@ class PostControllerIT {
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -61,10 +62,11 @@ class PostControllerIT {
     }
 
     @Test
-    fun `Create Post Empty Content`() = withTestApplication(Application::module) {
+    fun `Create Post Empty Content`() = withTestApplication {
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(this.javaClass.getResource("/create-post-empty-content.json").readText())
             }
         ) {
@@ -74,10 +76,11 @@ class PostControllerIT {
     }
 
     @Test
-    fun `Create Post Incorrect youtubeId`() = withTestApplication(Application::module) {
+    fun `Create Post Incorrect youtubeId`() = withTestApplication {
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(this.javaClass.getResource("/create-post-incorrect-youtube-id.json").readText())
             }
         ) {
@@ -87,11 +90,12 @@ class PostControllerIT {
     }
 
     @Test
-    fun `Delete Non Exist Post`() = withTestApplication(Application::module) {
+    fun `Delete Non Exist Post`() = withTestApplication {
         val id = "46813418-0f33-4f2b-88ac-be4ca4b67ee8"
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.NotFound, response.status())
@@ -100,11 +104,12 @@ class PostControllerIT {
     }
 
     @Test
-    fun `Get Non Exist Post`() = withTestApplication(Application::module) {
+    fun `Get Non Exist Post`() = withTestApplication {
         val id = "46813418-0f33-4f2b-88ac-be4ca4b67ee8"
         with(
             handleRequest(HttpMethod.Get, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.NotFound, response.status())
@@ -113,11 +118,12 @@ class PostControllerIT {
     }
 
     @Test
-    fun `Get with Created Post Increment View`() = withTestApplication(Application::module) {
+    fun `Get with Created Post Increment View`() = withTestApplication {
         var id: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(this.javaClass.getResource("/create-post.json").readText())
             }
         ) {
@@ -128,6 +134,7 @@ class PostControllerIT {
         with(
             handleRequest(HttpMethod.Get, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -137,6 +144,7 @@ class PostControllerIT {
         with(
             handleRequest(HttpMethod.Get, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -146,6 +154,7 @@ class PostControllerIT {
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -155,11 +164,12 @@ class PostControllerIT {
     }
 
     @Test
-    fun `Get All Created Post Increment View`() = withTestApplication(Application::module) {
+    fun `Get All Created Post Increment View`() = withTestApplication {
         var id: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(this.javaClass.getResource("/create-post.json").readText())
             }
         ) {
@@ -170,6 +180,7 @@ class PostControllerIT {
         with(
             handleRequest(HttpMethod.Get, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -180,6 +191,7 @@ class PostControllerIT {
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())

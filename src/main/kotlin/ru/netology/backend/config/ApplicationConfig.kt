@@ -45,11 +45,11 @@ fun Routing.controllerConfig() {
             files(uploadDir)
         }
 
-//        authenticate {
+        authenticate {
             controller("/post") { PostController(instance()) }
             controller("/repost") { RepostController(instance()) }
             controller("/post/favorite") { PostFavoriteController(instance()) }
             controller("/post/share") { PostShareController(instance()) }
-//        }
+        }
     }
 }
