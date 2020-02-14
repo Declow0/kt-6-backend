@@ -13,7 +13,7 @@ import ru.netology.backend.service.PostService
 import java.util.*
 
 class PostFavoriteController(application: Application) : AbstractKodeinController(application) {
-    private val service by kodein.instance<PostService>()
+    private val postService by kodein.instance<PostService>()
 
     override fun Route.getRoutes() {
         put("/{id}") {
@@ -21,7 +21,7 @@ class PostFavoriteController(application: Application) : AbstractKodeinControlle
             idInput!!.isUUID()
 
             call.respond(
-                service.favorite(UUID.fromString(idInput))
+                postService.favorite(UUID.fromString(idInput))
             )
         }
 
@@ -30,7 +30,7 @@ class PostFavoriteController(application: Application) : AbstractKodeinControlle
             idInput!!.isUUID()
 
             call.respond(
-                service.unfavorite(UUID.fromString(idInput))
+                postService.unfavorite(UUID.fromString(idInput))
             )
         }
     }

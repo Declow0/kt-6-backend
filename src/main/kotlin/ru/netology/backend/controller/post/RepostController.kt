@@ -14,7 +14,7 @@ import ru.netology.backend.service.PostService
 import javax.validation.Validator
 
 class RepostController(application: Application) : AbstractKodeinController(application) {
-    private val service by kodein.instance<PostService>()
+    private val postService by kodein.instance<PostService>()
     private val validator by kodein.instance<Validator>()
 
     override fun Route.getRoutes() {
@@ -22,7 +22,7 @@ class RepostController(application: Application) : AbstractKodeinController(appl
             val repost = call.receive<RepostRqDto>()
             repost.validate(validator)
 
-            call.respond(service.repost(repost))
+            call.respond(postService.repost(repost))
         }
     }
 }

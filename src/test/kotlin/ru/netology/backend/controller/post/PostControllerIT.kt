@@ -71,7 +71,7 @@ class PostControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("content: не должно быть пустым", response.content)
+            assertEquals("content: не должно быть пустым", JsonPath.read(response.content, "$.error"))
         }
     }
 
@@ -85,7 +85,7 @@ class PostControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("youtubeId: должно соответствовать \"[a-zA-Z0-9_-]{11}\"", response.content)
+            assertEquals("youtubeId: должно соответствовать \"[a-zA-Z0-9_-]{11}\"", JsonPath.read(response.content, "$.error"))
         }
     }
 
@@ -99,7 +99,7 @@ class PostControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.NotFound, response.status())
-            assertEquals("Not found post with id: $id", response.content)
+            assertEquals("Not found post with id: $id", JsonPath.read(response.content, "$.error"))
         }
     }
 
@@ -113,7 +113,7 @@ class PostControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.NotFound, response.status())
-            assertEquals("Not found post with id: $id", response.content)
+            assertEquals("Not found post with id: $id", JsonPath.read(response.content, "$.error"))
         }
     }
 

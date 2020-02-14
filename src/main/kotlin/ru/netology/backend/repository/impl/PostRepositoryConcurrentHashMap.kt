@@ -6,22 +6,18 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class PostRepositoryConcurrentHashMap : PostRepository {
-    private val repo = ConcurrentHashMap<UUID, Post>()
+    private val map = ConcurrentHashMap<UUID, Post>()
 
-    override fun getAll(): List<Post> {
-        return repo.values.toList()
-    }
+    override fun getAll(): List<Post> = map.values.toList()
 
-    override fun get(id: UUID): Post? {
-        return repo[id]
-    }
+    override fun get(id: UUID): Post? = map[id]
 
     override fun put(post: Post): Post {
-        repo[post.id] = post
+        map[post.id] = post
         return post
     }
 
     override fun delete(id: UUID) {
-        repo.remove(id)
+        map.remove(id)
     }
 }

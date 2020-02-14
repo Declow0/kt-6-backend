@@ -34,7 +34,7 @@ class RepostControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("original: не должно равняться null", response.content)
+            assertEquals("original: не должно равняться null", JsonPath.read(response.content, "$.error"))
         }
     }
 
@@ -57,7 +57,7 @@ class RepostControllerIT {
             assertEquals(HttpStatusCode.BadRequest, response.status())
             assertEquals(
                 "Original Post Not Found",
-                response.content
+                JsonPath.read(response.content, "$.error")
             )
         }
     }

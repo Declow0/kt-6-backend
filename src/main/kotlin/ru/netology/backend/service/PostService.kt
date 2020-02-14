@@ -11,6 +11,7 @@ interface PostService {
 
     fun get(id: UUID): PostRsDto
     fun put(postRqDto: PostRqDto): PostRsDto
+    suspend fun update(postRqDto: PostRqDto): PostRsDto
     suspend fun delete(id: UUID)
 
     suspend fun favorite(id: UUID): PostRsDto

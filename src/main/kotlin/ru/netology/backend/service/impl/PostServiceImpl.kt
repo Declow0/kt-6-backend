@@ -14,24 +14,24 @@ import ru.netology.backend.service.PostService
 import java.net.URL
 import java.util.*
 
-class PostServiceImpl(val repo: PostRepository) : PostService {
+class PostServiceImpl(private val postRepository: PostRepository) : PostService {
     private val mutex = Mutex()
 
     override fun getAllAndView(): List<PostRsDto> {
-        return repo.getAll()
+        return postRepository.getAll()
             .onEach { it.views.incrementAndGet() }
             .sortedByDescending { it.createTime }
             .map(PostRsDto.Companion::fromModel)
     }
 
     override fun getAndView(id: UUID): PostRsDto {
-        val post = repo.get(id) ?: throw NotFoundException(id)
+        val post = postRepository.get(id) ?: throw NotFoundException(id)
         post.views.incrementAndGet()
         return PostRsDto.fromModel(post)
     }
 
     override fun get(id: UUID): PostRsDto {
-        val post = repo.get(id) ?: throw NotFoundException(id)
+        val post = postRepository.get(id) ?: throw NotFoundException(id)
         return PostRsDto.fromModel(post)
     }
 
@@ -45,29 +45,48 @@ class PostServiceImpl(val repo: PostRepository) : PostService {
             commercialContent = if (postRqDto.commercialContent != null) URL(postRqDto.commercialContent) else null
         )
 
-        val postInRepo = repo.get(post.id)
+        val postInRepo = postRepository.get(post.id)
         if (postInRepo != null) {
             throw AlreadyExistException(postInRepo.id)
         }
-        return PostRsDto.fromModel(repo.put(post))
+        return PostRsDto.fromModel(postRepository.put(post))
+    }
+
+    override suspend fun update(postRqDto: PostRqDto): PostRsDto {
+        if (postRqDto.id == null) {
+            throw BadRequestException("Empty id param!")
+        }
+        val id = UUID.fromString(postRqDto.id)
+        val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
+        mutex.withLock(postInRepo) {
+            val post = postInRepo.copy(
+                content = postRqDto.content,
+                address = postRqDto.address,
+                location = postRqDto.location,
+                youtubeId = postRqDto.youtubeId,
+                commercialContent = if (postRqDto.commercialContent != null) URL(postRqDto.commercialContent) else null
+            )
+
+            return PostRsDto.fromModel(postRepository.put(post))
+        }
     }
 
     override suspend fun delete(id: UUID) {
-        val postInRepo = repo.get(id) ?: throw NotFoundException(id)
+        val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
-            repo.delete(id)
+            postRepository.delete(id)
         }
     }
 
     override suspend fun favorite(id: UUID): PostRsDto {
-        val postInRepo = repo.get(id) ?: throw NotFoundException(id)
+        val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
             if (!postInRepo.favoriteByMe) {
                 val post: Post = postInRepo.copy(
                     favorite = postInRepo.favorite + 1,
                     favoriteByMe = true
                 )
-                return PostRsDto.fromModel(repo.put(post))
+                return PostRsDto.fromModel(postRepository.put(post))
             } else {
                 throw BadRequestException("Already favorite")
             }
@@ -75,14 +94,14 @@ class PostServiceImpl(val repo: PostRepository) : PostService {
     }
 
     override suspend fun unfavorite(id: UUID): PostRsDto {
-        val postInRepo = repo.get(id) ?: throw NotFoundException(id)
+        val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
             if (postInRepo.favoriteByMe) {
                 val post: Post = postInRepo.copy(
                     favorite = postInRepo.favorite - 1,
                     favoriteByMe = false
                 )
-                return PostRsDto.fromModel(repo.put(post))
+                return PostRsDto.fromModel(postRepository.put(post))
             } else {
                 throw BadRequestException("Already unfavorite")
             }
@@ -90,14 +109,14 @@ class PostServiceImpl(val repo: PostRepository) : PostService {
     }
 
     override suspend fun share(id: UUID): PostRsDto {
-        val postInRepo = repo.get(id) ?: throw NotFoundException(id)
+        val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
             if (!postInRepo.shareByMe) {
                 val post: Post = postInRepo.copy(
                     share = postInRepo.share + 1,
                     shareByMe = true
                 )
-                return PostRsDto.fromModel(repo.put(post))
+                return PostRsDto.fromModel(postRepository.put(post))
             } else {
                 throw BadRequestException("Already share")
             }
@@ -122,12 +141,12 @@ class PostServiceImpl(val repo: PostRepository) : PostService {
             original = original
         )
 
-        if (repo.get(post.id) != null) {
+        if (postRepository.get(post.id) != null) {
             throw AlreadyExistException(post.id)
         }
 
         return PostRsDto.fromModel(
-            repo.put(post)
+            postRepository.put(post)
         )
     }
 }

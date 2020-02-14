@@ -82,7 +82,7 @@ class PostFavoriteControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("Already favorite", response.content)
+            assertEquals("Already favorite", JsonPath.read(response.content, "$.error"))
         }
         `Delete Post`()
     }
@@ -124,7 +124,7 @@ class PostFavoriteControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("Already unfavorite", response.content)
+            assertEquals("Already unfavorite", JsonPath.read(response.content, "$.error"))
         }
         `Delete Post`()
     }

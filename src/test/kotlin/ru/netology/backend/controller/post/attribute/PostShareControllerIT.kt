@@ -81,7 +81,7 @@ class PostShareControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("Already share", response.content)
+            assertEquals("Already share", JsonPath.read(response.content, "$.error"))
         }
         `Delete Post`()
     }

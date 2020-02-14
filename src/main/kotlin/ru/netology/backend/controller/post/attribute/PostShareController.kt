@@ -12,7 +12,7 @@ import ru.netology.backend.service.PostService
 import java.util.*
 
 class PostShareController(application: Application) : AbstractKodeinController(application) {
-    private val service by kodein.instance<PostService>()
+    private val postService by kodein.instance<PostService>()
 
     override fun Route.getRoutes() {
         put("/{id}") {
@@ -20,7 +20,7 @@ class PostShareController(application: Application) : AbstractKodeinController(a
             idInput!!.isUUID()
 
             call.respond(
-                service.share(UUID.fromString(idInput))
+                postService.share(UUID.fromString(idInput))
             )
         }
     }

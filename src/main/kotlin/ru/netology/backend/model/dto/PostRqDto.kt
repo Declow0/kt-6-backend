@@ -1,6 +1,7 @@
 package ru.netology.backend.model.dto
 
 import org.hibernate.validator.constraints.URL
+import ru.netology.backend.config.UUIDPatternString
 import ru.netology.backend.config.YouTubeIDPatternString
 import ru.netology.backend.model.Location
 import javax.validation.constraints.NotEmpty
@@ -20,5 +21,8 @@ data class PostRqDto(
     val youtubeId: String? = null,
 
     @field:URL
-    val commercialContent: String? = null
+    val commercialContent: String? = null,
+
+    @field:Pattern(regexp = UUIDPatternString)
+    val id: String? = null
 )
