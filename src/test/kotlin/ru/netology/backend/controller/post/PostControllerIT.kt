@@ -9,6 +9,8 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import net.minidev.json.JSONArray
 import org.junit.Test
+import org.kodein.di.generic.instance
+import org.kodein.di.ktor.kodein
 import ru.netology.backend.addAuthToken
 import ru.netology.backend.config.UUIDPatternString
 import ru.netology.backend.withTestApplication

@@ -1,7 +1,6 @@
 package ru.netology.backend.config
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.JWTVerifier
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.auth.Authentication
@@ -11,7 +10,10 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.gson.gson
 import io.ktor.routing.Routing
+import org.kodein.di.generic.instance
 import org.kodein.di.ktor.KodeinFeature
+import org.kodein.di.ktor.kodein
+import ru.netology.backend.service.UserService
 
 fun Application.module() {
     install(ContentNegotiation) {
@@ -30,9 +32,12 @@ fun Application.module() {
 
     install(Authentication) {
         jwt {
-            verifier(JWT.require(Algorithm.HMAC256("ASdasdasd")).build())
+            val verifier by kodein().instance<JWTVerifier>()
+            verifier(verifier)
+
+            val userService by kodein().instance<UserService>()
             validate {
-                UserIdPrincipal("me")
+                userService.get(it.payload.subject)
             }
         }
     }
