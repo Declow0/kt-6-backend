@@ -1,5 +1,5 @@
 package ru.netology.backend.service
 
 interface JWTService {
-    fun generate(username: String): String
+    fun generateAuthToken(username: String): String
 }

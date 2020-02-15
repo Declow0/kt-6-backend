@@ -56,7 +56,7 @@ fun Kodein.MainBuilder.appConfig(environment: ApplicationEnvironment) {
     bind<UserRepository>() with eagerSingleton { UserRepositoryConcurrentHashMap() }
 
     bind<PostService>() with eagerSingleton { PostServiceImpl(instance()) }
-    bind<UserService>() with eagerSingleton { UserServiceImpl(instance(), instance()) }
+    bind<UserService>() with eagerSingleton { UserServiceImpl(instance(), instance(), instance()) }
     bind<FileService>() with eagerSingleton { FileServiceImpl(instance(tag = "uploadDir")) }
 }
 

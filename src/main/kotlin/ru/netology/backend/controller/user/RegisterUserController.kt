@@ -22,7 +22,7 @@ class RegisterUserController(application: Application) : AbstractKodeinControlle
             val user = call.receive<User>()
             user.validate(validator)
 
-            call.respond(userService.put(user))
+            call.respond(userService.auth(user))
         }
     }
 }

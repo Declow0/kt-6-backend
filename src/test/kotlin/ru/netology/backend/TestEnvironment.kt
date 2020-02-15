@@ -28,7 +28,7 @@ fun <R> withTestApplication(
     application.module()
     val userService by application.kodein().instance<UserService>()
     runBlocking {
-        userService.put(User("vasya", "password"))
+        userService.auth(User("vasya", "password"))
     }
     test()
 }
@@ -37,6 +37,6 @@ fun TestApplicationRequest.addAuthToken(username: String = "vasya") {
     val jwtService by call.kodein().instance<JWTService>()
     addHeader(
         HttpHeaders.Authorization,
-        "Bearer ${jwtService.generate(username)}"
+        "Bearer ${jwtService.generateAuthToken(username)}"
     )
 }

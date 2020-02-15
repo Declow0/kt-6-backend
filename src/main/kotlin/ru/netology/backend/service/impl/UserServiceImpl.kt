@@ -7,11 +7,13 @@ import ru.netology.backend.model.User
 import ru.netology.backend.model.exception.AlreadyExistException
 import ru.netology.backend.model.exception.NotFoundException
 import ru.netology.backend.repository.UserRepository
+import ru.netology.backend.service.JWTService
 import ru.netology.backend.service.UserService
 
 class UserServiceImpl(
     private val userRepository: UserRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val jwtService: JWTService
 ) : UserService {
     private val mutex = Mutex()
 
@@ -19,16 +21,18 @@ class UserServiceImpl(
         userRepository.get(username) ?: throw NotFoundException("Not Found User with username: $username")
 
 
-    override suspend fun put(user: User): User {
+    override suspend fun auth(user: User): String {
         mutex.withLock {
             val userInRepo = userRepository.get(user.username)
             if (userInRepo != null) {
                 throw AlreadyExistException("User with username: ${userInRepo.username} already exist!")
             }
 
-            return userRepository.put(
+            userRepository.put(
                 user.copy(password = passwordEncoder.encode(user.password))
             )
+
+            return jwtService.generateAuthToken(user.username)
         }
     }
 }

@@ -8,7 +8,7 @@ class JWTServiceImpl(
     private val algorithm: Algorithm
 ) : JWTService {
 
-    override fun generate(username: String): String = JWT.create()
+    override fun generateAuthToken(username: String): String = JWT.create()
         .withSubject(username)
         .sign(algorithm)
 

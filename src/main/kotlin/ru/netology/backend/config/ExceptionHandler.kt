@@ -2,6 +2,7 @@ package ru.netology.backend.config
 
 import io.ktor.application.call
 import io.ktor.features.StatusPages
+import io.ktor.features.UnsupportedMediaTypeException
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import ru.netology.backend.model.dto.ErrorMessageDto
@@ -12,6 +13,10 @@ import ru.netology.backend.model.exception.NotFoundException
 fun StatusPages.Configuration.exceptionHandler() {
     exception<BadRequestException> {
         call.respond(HttpStatusCode.BadRequest, ErrorMessageDto(it.getMessage()))
+    }
+
+    exception<UnsupportedMediaTypeException> {
+        call.respond(HttpStatusCode.UnsupportedMediaType, ErrorMessageDto(it.getMessage()))
     }
 
     exception<AlreadyExistException> {

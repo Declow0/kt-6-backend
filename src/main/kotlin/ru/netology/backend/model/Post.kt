@@ -1,7 +1,5 @@
 package ru.netology.backend.model
 
-import com.google.gson.annotations.JsonAdapter
-import ru.netology.backend.model.adapter.LocalDateTimeJsonAdapter
 import java.net.URL
 import java.time.LocalDateTime
 import java.util.*
@@ -12,7 +10,6 @@ data class Post(
 
     val content: String = "",
 
-    @JsonAdapter(LocalDateTimeJsonAdapter::class)
     val createTime: LocalDateTime = LocalDateTime.now(),
 
     val favorite: Long = 0L,

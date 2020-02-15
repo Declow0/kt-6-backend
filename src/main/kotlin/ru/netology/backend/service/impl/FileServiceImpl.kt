@@ -38,15 +38,15 @@ class FileServiceImpl(private val uploadPath: String) : FileService {
                             ContentType.Image.PNG -> "png"
                             else -> throw UnsupportedMediaTypeException(part.contentType!!)
                         }
-                        val name = "${UUID.randomUUID()}.$ext"
-                        val path = Paths.get(uploadPath, name)
+                        val fileUUID = "${UUID.randomUUID()}.$ext"
+                        val path = Paths.get(uploadPath, fileUUID)
                         part.streamProvider().use {
                             withContext(Dispatchers.IO) {
                                 Files.copy(it, path)
                             }
                         }
                         part.dispose()
-                        response = name
+                        response = fileUUID
                         return@forEachPart
                     }
                 }
