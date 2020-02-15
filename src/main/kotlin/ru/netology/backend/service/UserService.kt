@@ -4,5 +4,6 @@ import ru.netology.backend.model.User
 
 interface UserService {
     fun get(username: String): User
-    suspend fun auth(user: User): String
+    suspend fun register(user: User): String
+    fun authenticate(user: User): String
 }

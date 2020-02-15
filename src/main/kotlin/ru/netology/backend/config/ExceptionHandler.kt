@@ -8,6 +8,7 @@ import io.ktor.response.respond
 import ru.netology.backend.model.dto.ErrorMessageDto
 import ru.netology.backend.model.exception.AlreadyExistException
 import ru.netology.backend.model.exception.BadRequestException
+import ru.netology.backend.model.exception.InvalidPasswordException
 import ru.netology.backend.model.exception.NotFoundException
 
 fun StatusPages.Configuration.exceptionHandler() {
@@ -28,6 +29,10 @@ fun StatusPages.Configuration.exceptionHandler() {
     }
 
     exception<AccessDeniedException> {
+        call.respond(HttpStatusCode.Forbidden, ErrorMessageDto(it.getMessage()))
+    }
+
+    exception<InvalidPasswordException> {
         call.respond(HttpStatusCode.Forbidden, ErrorMessageDto(it.getMessage()))
     }
 

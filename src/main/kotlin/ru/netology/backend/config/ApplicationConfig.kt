@@ -24,7 +24,7 @@ import ru.netology.backend.controller.post.PostController
 import ru.netology.backend.controller.post.PostFavoriteController
 import ru.netology.backend.controller.post.PostShareController
 import ru.netology.backend.controller.post.RepostController
-import ru.netology.backend.controller.user.RegisterUserController
+import ru.netology.backend.controller.user.UserController
 import ru.netology.backend.repository.PostFavoriteRepository
 import ru.netology.backend.repository.PostRepository
 import ru.netology.backend.repository.PostShareRepository
@@ -68,7 +68,7 @@ fun Kodein.MainBuilder.appConfig(environment: ApplicationEnvironment) {
 
 fun Routing.controllerConfig() {
     route("/api/v1") {
-        controller("/registration") { RegisterUserController(instance()) }
+        controller { UserController(instance()) }
 
         authenticate {
             static("/static") {

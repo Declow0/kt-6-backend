@@ -13,16 +13,23 @@ import ru.netology.backend.model.User
 import ru.netology.backend.service.UserService
 import javax.validation.Validator
 
-class RegisterUserController(application: Application) : AbstractKodeinController(application) {
+class UserController(application: Application) : AbstractKodeinController(application) {
     private val userService by kodein.instance<UserService>()
     private val validator by kodein.instance<Validator>()
 
     override fun Route.getRoutes() {
-        post {
+        post("/registration") {
             val user = call.receive<User>()
             user.validate(validator)
 
-            call.respond(userService.auth(user))
+            call.respond(userService.register(user))
+        }
+
+        post("/authentication") {
+            val user = call.receive<User>()
+            user.validate(validator)
+
+            call.respond(userService.authenticate(user))
         }
     }
 }
