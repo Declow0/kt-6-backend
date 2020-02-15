@@ -3,9 +3,11 @@ package ru.netology.backend.service.impl
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.netology.backend.model.Post
+import ru.netology.backend.model.User
 import ru.netology.backend.model.dto.PostRqDto
 import ru.netology.backend.model.dto.PostRsDto
 import ru.netology.backend.model.dto.RepostRqDto
+import ru.netology.backend.model.exception.AccessDeniedException
 import ru.netology.backend.model.exception.AlreadyExistException
 import ru.netology.backend.model.exception.BadRequestException
 import ru.netology.backend.model.exception.NotFoundException
@@ -35,9 +37,9 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
         return PostRsDto.fromModel(post)
     }
 
-    override fun put(postRqDto: PostRqDto): PostRsDto {
+    override fun put(postRqDto: PostRqDto, currentUser: User): PostRsDto {
         val post = Post(
-            createdUser = postRqDto.createdUser,
+            createdUser = currentUser.username,
             content = postRqDto.content,
             address = postRqDto.address,
             location = postRqDto.location,
@@ -52,12 +54,15 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
         return PostRsDto.fromModel(postRepository.put(post))
     }
 
-    override suspend fun update(postRqDto: PostRqDto): PostRsDto {
+    override suspend fun update(postRqDto: PostRqDto, currentUser: User): PostRsDto {
         if (postRqDto.id == null) {
             throw BadRequestException("Empty id param!")
         }
         val id = UUID.fromString(postRqDto.id)
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
+        if (postInRepo.createdUser != currentUser.username) {
+            throw AccessDeniedException("Can't change post of another user!")
+        }
         mutex.withLock(postInRepo) {
             val post = postInRepo.copy(
                 content = postRqDto.content,
@@ -71,8 +76,11 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
         }
     }
 
-    override suspend fun delete(id: UUID) {
+    override suspend fun delete(id: UUID, currentUser: User) {
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
+        if (postInRepo.createdUser != currentUser.username) {
+            throw AccessDeniedException("Can't delete post of another user!")
+        }
         mutex.withLock(postInRepo) {
             postRepository.delete(id)
         }
@@ -123,7 +131,7 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
         }
     }
 
-    override suspend fun repost(repostRqDto: RepostRqDto): PostRsDto {
+    override suspend fun repost(repostRqDto: RepostRqDto, currentUser: User): PostRsDto {
         val original = UUID.fromString(repostRqDto.original)
         try {
             get(original)
@@ -132,7 +140,7 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
         }
 
         val post = Post(
-            createdUser = repostRqDto.createdUser,
+            createdUser = currentUser.username,
             content = repostRqDto.content,
             address = repostRqDto.address,
             location = repostRqDto.location,

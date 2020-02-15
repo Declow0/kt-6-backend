@@ -2,6 +2,7 @@ package ru.netology.backend.controller.post
 
 import io.ktor.application.Application
 import io.ktor.application.call
+import io.ktor.auth.principal
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -19,10 +20,10 @@ class RepostController(application: Application) : AbstractKodeinController(appl
 
     override fun Route.getRoutes() {
         post {
-            val repost = call.receive<RepostRqDto>()
+            val repost = call.receive(RepostRqDto::class)
             repost.validate(validator)
 
-            call.respond(postService.repost(repost))
+            call.respond(postService.repost(repost, call.principal()!!))
         }
     }
 }

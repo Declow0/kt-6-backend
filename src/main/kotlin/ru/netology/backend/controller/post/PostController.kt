@@ -10,7 +10,6 @@ import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.isUUID
 import ru.netology.backend.config.validate
-import ru.netology.backend.model.User
 import ru.netology.backend.model.dto.PostRqDto
 import ru.netology.backend.service.PostService
 import java.util.*
@@ -35,30 +34,27 @@ class PostController(application: Application) : AbstractKodeinController(applic
         }
 
         post {
-            call.principal<User>()
-            val post = call.receive<PostRqDto>()
+            val post = call.receive(PostRqDto::class)
             post.validate(validator)
 
             call.respond(
-                postService.put(post)
+                postService.put(post, call.principal()!!)
             )
         }
 
         patch {
-            call.principal<User>()
-            val post = call.receive<PostRqDto>()
+            val post = call.receive(PostRqDto::class)
             post.validate(validator)
 
             call.respond(
-                postService.update(post)
+                postService.update(post, call.principal()!!)
             )
         }
 
         delete("/{id}") {
             val idInput = call.parameters["id"]
             idInput!!.isUUID()
-            call.principal<User>()
-            postService.delete(UUID.fromString(idInput))
+            postService.delete(UUID.fromString(idInput), call.principal()!!)
 
             call.respond(true)
         }

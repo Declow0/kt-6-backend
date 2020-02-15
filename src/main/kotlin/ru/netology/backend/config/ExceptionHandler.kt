@@ -22,6 +22,10 @@ fun StatusPages.Configuration.exceptionHandler() {
         call.respond(HttpStatusCode.NotFound, ErrorMessageDto(it.getMessage()))
     }
 
+    exception<AccessDeniedException> {
+        call.respond(HttpStatusCode.Forbidden, ErrorMessageDto(it.getMessage()))
+    }
+
     exception<Throwable> {
         call.respond(HttpStatusCode.InternalServerError, ErrorMessageDto(it.getMessage()))
     }

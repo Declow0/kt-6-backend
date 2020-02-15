@@ -23,6 +23,7 @@ import ru.netology.backend.controller.post.PostController
 import ru.netology.backend.controller.post.RepostController
 import ru.netology.backend.controller.post.attribute.PostFavoriteController
 import ru.netology.backend.controller.post.attribute.PostShareController
+import ru.netology.backend.controller.user.UserController
 import ru.netology.backend.repository.PostRepository
 import ru.netology.backend.repository.UserRepository
 import ru.netology.backend.repository.impl.PostRepositoryConcurrentHashMap
@@ -56,6 +57,8 @@ fun Kodein.MainBuilder.appConfig(environment: ApplicationEnvironment) {
 
 fun Routing.controllerConfig() {
     route("/api/v1") {
+        controller("/user") { UserController(instance()) }
+
         authenticate {
             static("/static") {
                 val uploadDir: String by kodein().instance(tag = "uploadDir")

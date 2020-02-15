@@ -22,7 +22,6 @@ class RepostControllerIT {
     fun `Create Repost Null Original`() = withTestApplication {
         val rq = """
         {
-            "createdUser": "Netology Group Company"
         }
         """.trimIndent()
 
@@ -42,7 +41,6 @@ class RepostControllerIT {
     fun `Create Repost Not Exist Original`() = withTestApplication {
         val rq = """
         {
-            "createdUser": "Netology Group Company",
             "original": "46813418-0f33-4f2b-88ac-be4ca4b67ee8"
         }
         """.trimIndent()
@@ -68,7 +66,7 @@ class RepostControllerIT {
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                addAuthToken()
+                addAuthToken("vasya")
                 setBody(this.javaClass.getResource("/create-post.json").readText())
             }
         ) {
@@ -78,7 +76,6 @@ class RepostControllerIT {
 
         val rq = """
         {
-            "createdUser": "Netology Group Company",
             "original": "$original"
         }
         """.trimIndent()
@@ -96,7 +93,7 @@ class RepostControllerIT {
             val json = response.content
             repost = JsonPath.read(json, "$.id")
 
-            assertEquals("Netology Group Company", JsonPath.read(json, "$.createdUser"))
+            assertEquals("vasya", JsonPath.read(json, "$.createdUser"))
             assertEquals("", JsonPath.read(json, "$.content"))
             assertNotNull(JsonPath.read<Long>(json, "$.createTime"))
             assertEquals(0, JsonPath.read(json, "$.favorite"))

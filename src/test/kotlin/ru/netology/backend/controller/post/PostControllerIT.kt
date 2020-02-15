@@ -27,7 +27,7 @@ class PostControllerIT {
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                addAuthToken()
+                addAuthToken("vasya")
                 setBody(this.javaClass.getResource("/create-post.json").readText())
             }
         ) {
@@ -35,7 +35,7 @@ class PostControllerIT {
             val json = response.content
             id = JsonPath.read(json, "$.id")
 
-            assertEquals("Netology Group Company", JsonPath.read(json, "$.createdUser"))
+            assertEquals("vasya", JsonPath.read(json, "$.createdUser"))
             assertEquals("В чащах юга жил-был цитрус? Да, но фальшивый экземпляръ!", JsonPath.read(json, "$.content"))
             assertNotNull(JsonPath.read<Long>(json, "$.createTime"))
             assertEquals(0, JsonPath.read(json, "$.favorite"))
@@ -87,7 +87,7 @@ class PostControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("youtubeId: должно соответствовать \"[a-zA-Z0-9_-]{11}\"", JsonPath.read(response.content, "$.error"))
+            assertEquals("youtubeId: должно соответствовать \"^[a-zA-Z0-9_-]{11}\$\"", JsonPath.read(response.content, "$.error"))
         }
     }
 
