@@ -5,7 +5,7 @@ import ru.netology.backend.repository.PostRepository
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class PostRepositoryConcurrentHashMap : PostRepository {
+class PostRepositoryCHM : PostRepository {
     private val map = ConcurrentHashMap<UUID, Post>()
 
     override fun getAll(): List<Post> = map.values.toList()

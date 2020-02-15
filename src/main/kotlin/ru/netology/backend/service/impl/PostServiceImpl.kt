@@ -11,30 +11,53 @@ import ru.netology.backend.model.exception.AccessDeniedException
 import ru.netology.backend.model.exception.AlreadyExistException
 import ru.netology.backend.model.exception.BadRequestException
 import ru.netology.backend.model.exception.NotFoundException
+import ru.netology.backend.repository.PostFavoriteRepository
 import ru.netology.backend.repository.PostRepository
+import ru.netology.backend.repository.PostShareRepository
 import ru.netology.backend.service.PostService
 import java.net.URL
 import java.util.*
 
-class PostServiceImpl(private val postRepository: PostRepository) : PostService {
+class PostServiceImpl(
+    private val postRepository: PostRepository,
+    private val postFavoriteRepository: PostFavoriteRepository,
+    private val postShareRepository: PostShareRepository
+) : PostService {
     private val mutex = Mutex()
 
-    override fun getAllAndView(): List<PostRsDto> {
+    override fun getAllAndView(currentUser: User): List<PostRsDto> {
         return postRepository.getAll()
             .onEach { it.views.incrementAndGet() }
             .sortedByDescending { it.createTime }
-            .map(PostRsDto.Companion::fromModel)
+            .map { this.get(it, currentUser) }
     }
 
-    override fun getAndView(id: UUID): PostRsDto {
+    override fun getAndView(id: UUID, currentUser: User): PostRsDto {
         val post = postRepository.get(id) ?: throw NotFoundException(id)
         post.views.incrementAndGet()
-        return PostRsDto.fromModel(post)
+        return get(post, currentUser)
     }
 
-    override fun get(id: UUID): PostRsDto {
-        val post = postRepository.get(id) ?: throw NotFoundException(id)
-        return PostRsDto.fromModel(post)
+    private fun get(post: Post, currentUser: User): PostRsDto {
+        return PostRsDto.fromModel(
+            post = post,
+            favoriteCount = postFavoriteRepository.getFavoriteCount(post.id),
+            favoriteByMe = postFavoriteRepository.isFavoriteByUser(post.id, currentUser.username),
+            // TODO Comments Repo
+            commentCount = 0L,
+            shareCount = postShareRepository.getShareCount(post.id),
+            shareByMe = postShareRepository.isShareByUser(post.id, currentUser.username)
+        )
+    }
+
+    private fun createLinkedEntries(id: UUID) {
+        postFavoriteRepository.createEntry(id)
+        postShareRepository.createEntry(id)
+    }
+
+    private fun deleteLinkedEntries(id: UUID) {
+        postFavoriteRepository.deleteEntry(id)
+        postShareRepository.deleteEntry(id)
     }
 
     override fun put(postRqDto: PostRqDto, currentUser: User): PostRsDto {
@@ -47,11 +70,33 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
             commercialContent = if (postRqDto.commercialContent != null) URL(postRqDto.commercialContent) else null
         )
 
-        val postInRepo = postRepository.get(post.id)
-        if (postInRepo != null) {
-            throw AlreadyExistException(postInRepo.id)
+        return put(post, currentUser)
+    }
+
+    override fun repost(repostRqDto: RepostRqDto, currentUser: User): PostRsDto {
+        val original = UUID.fromString(repostRqDto.original)
+        postRepository.get(original) ?: throw BadRequestException("Original Post Not Found")
+
+        val post = Post(
+            createdUser = currentUser.username,
+            content = repostRqDto.content,
+            address = repostRqDto.address,
+            location = repostRqDto.location,
+            youtubeId = repostRqDto.youtubeId,
+            commercialContent = if (repostRqDto.commercialContent != null) URL(repostRqDto.commercialContent) else null,
+            original = original
+        )
+
+        return put(post, currentUser)
+    }
+
+    private fun put(post: Post, currentUser: User): PostRsDto {
+        if (postRepository.get(post.id) != null) {
+            throw AlreadyExistException(post.id)
         }
-        return PostRsDto.fromModel(postRepository.put(post))
+
+        createLinkedEntries(post.id)
+        return get(postRepository.put(post), currentUser)
     }
 
     override suspend fun update(postRqDto: PostRqDto, currentUser: User): PostRsDto {
@@ -72,7 +117,7 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
                 commercialContent = if (postRqDto.commercialContent != null) URL(postRqDto.commercialContent) else null
             )
 
-            return PostRsDto.fromModel(postRepository.put(post))
+            return get(postRepository.put(post), currentUser)
         }
     }
 
@@ -83,78 +128,43 @@ class PostServiceImpl(private val postRepository: PostRepository) : PostService 
         }
         mutex.withLock(postInRepo) {
             postRepository.delete(id)
+            deleteLinkedEntries(id)
         }
     }
 
-    override suspend fun favorite(id: UUID): PostRsDto {
+    override suspend fun favorite(id: UUID, currentUser: User): PostRsDto {
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
-            if (!postInRepo.favoriteByMe) {
-                val post: Post = postInRepo.copy(
-                    favorite = postInRepo.favorite + 1,
-                    favoriteByMe = true
-                )
-                return PostRsDto.fromModel(postRepository.put(post))
+            if (!postFavoriteRepository.isFavoriteByUser(id, currentUser.username)) {
+                postFavoriteRepository.addFavorite(id, currentUser.username)
+                return get(postInRepo, currentUser)
             } else {
                 throw BadRequestException("Already favorite")
             }
         }
     }
 
-    override suspend fun unfavorite(id: UUID): PostRsDto {
+    override suspend fun unfavorite(id: UUID, currentUser: User): PostRsDto {
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
-            if (postInRepo.favoriteByMe) {
-                val post: Post = postInRepo.copy(
-                    favorite = postInRepo.favorite - 1,
-                    favoriteByMe = false
-                )
-                return PostRsDto.fromModel(postRepository.put(post))
+            if (postFavoriteRepository.isFavoriteByUser(id, currentUser.username)) {
+                postFavoriteRepository.removeFavorite(id, currentUser.username)
+                return get(postInRepo, currentUser)
             } else {
                 throw BadRequestException("Already unfavorite")
             }
         }
     }
 
-    override suspend fun share(id: UUID): PostRsDto {
+    override suspend fun share(id: UUID, currentUser: User): PostRsDto {
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         mutex.withLock(postInRepo) {
-            if (!postInRepo.shareByMe) {
-                val post: Post = postInRepo.copy(
-                    share = postInRepo.share + 1,
-                    shareByMe = true
-                )
-                return PostRsDto.fromModel(postRepository.put(post))
+            if (!postShareRepository.isShareByUser(id, currentUser.username)) {
+                postShareRepository.addShare(id, currentUser.username)
+                return get(postInRepo, currentUser)
             } else {
                 throw BadRequestException("Already share")
             }
         }
-    }
-
-    override suspend fun repost(repostRqDto: RepostRqDto, currentUser: User): PostRsDto {
-        val original = UUID.fromString(repostRqDto.original)
-        try {
-            get(original)
-        } catch (e: NotFoundException) {
-            throw BadRequestException("Original Post Not Found")
-        }
-
-        val post = Post(
-            createdUser = currentUser.username,
-            content = repostRqDto.content,
-            address = repostRqDto.address,
-            location = repostRqDto.location,
-            youtubeId = repostRqDto.youtubeId,
-            commercialContent = if (repostRqDto.commercialContent != null) URL(repostRqDto.commercialContent) else null,
-            original = original
-        )
-
-        if (postRepository.get(post.id) != null) {
-            throw AlreadyExistException(post.id)
-        }
-
-        return PostRsDto.fromModel(
-            postRepository.put(post)
-        )
     }
 }

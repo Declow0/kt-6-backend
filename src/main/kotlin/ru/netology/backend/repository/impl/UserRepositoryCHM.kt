@@ -4,7 +4,7 @@ import ru.netology.backend.model.User
 import ru.netology.backend.repository.UserRepository
 import java.util.concurrent.ConcurrentHashMap
 
-class UserRepositoryConcurrentHashMap : UserRepository {
+class UserRepositoryCHM : UserRepository {
     private val map = ConcurrentHashMap<String, User>()
 
     override fun get(username: String): User? = map[username]

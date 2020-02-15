@@ -12,13 +12,6 @@ data class Post(
 
     val createTime: LocalDateTime = LocalDateTime.now(),
 
-    val favorite: Long = 0L,
-    val comment: Long = 0L,
-    val share: Long = 0L,
-
-    val favoriteByMe: Boolean = false,
-    val shareByMe: Boolean = false,
-
     val address: String = "",
     val location: Location? = null,
 

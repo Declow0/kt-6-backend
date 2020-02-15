@@ -1,4 +1,4 @@
-package ru.netology.backend.controller.post.attribute
+package ru.netology.backend.controller.post
 
 import com.jayway.jsonpath.JsonPath
 import io.ktor.http.ContentType

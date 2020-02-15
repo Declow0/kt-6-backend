@@ -1,7 +1,8 @@
-package ru.netology.backend.controller.post.attribute
+package ru.netology.backend.controller.post
 
 import io.ktor.application.Application
 import io.ktor.application.call
+import io.ktor.auth.principal
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.put
@@ -20,7 +21,7 @@ class PostShareController(application: Application) : AbstractKodeinController(a
             idInput!!.isUUID()
 
             call.respond(
-                postService.share(UUID.fromString(idInput))
+                postService.share(UUID.fromString(idInput), call.principal()!!)
             )
         }
     }

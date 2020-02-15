@@ -22,7 +22,7 @@ class PostController(application: Application) : AbstractKodeinController(applic
     override fun Route.getRoutes() {
         get {
             call.respond(
-                postService.getAllAndView()
+                postService.getAllAndView(call.principal()!!)
             )
         }
 
@@ -30,7 +30,7 @@ class PostController(application: Application) : AbstractKodeinController(applic
             val idInput = call.parameters["id"]
             idInput!!.isUUID()
             val id = UUID.fromString(idInput)
-            call.respond(postService.getAndView(id))
+            call.respond(postService.getAndView(id, call.principal()!!))
         }
 
         post {

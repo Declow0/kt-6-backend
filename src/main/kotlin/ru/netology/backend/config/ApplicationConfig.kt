@@ -21,14 +21,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import ru.netology.backend.controller.MediaController
 import ru.netology.backend.controller.post.PostController
+import ru.netology.backend.controller.post.PostFavoriteController
+import ru.netology.backend.controller.post.PostShareController
 import ru.netology.backend.controller.post.RepostController
-import ru.netology.backend.controller.post.attribute.PostFavoriteController
-import ru.netology.backend.controller.post.attribute.PostShareController
 import ru.netology.backend.controller.user.RegisterUserController
+import ru.netology.backend.repository.PostFavoriteRepository
 import ru.netology.backend.repository.PostRepository
+import ru.netology.backend.repository.PostShareRepository
 import ru.netology.backend.repository.UserRepository
-import ru.netology.backend.repository.impl.PostRepositoryConcurrentHashMap
-import ru.netology.backend.repository.impl.UserRepositoryConcurrentHashMap
+import ru.netology.backend.repository.impl.PostFavoriteRepositoryCHM
+import ru.netology.backend.repository.impl.PostRepositoryCHM
+import ru.netology.backend.repository.impl.PostShareRepositoryCHM
+import ru.netology.backend.repository.impl.UserRepositoryCHM
 import ru.netology.backend.service.FileService
 import ru.netology.backend.service.JWTService
 import ru.netology.backend.service.PostService
@@ -52,10 +56,12 @@ fun Kodein.MainBuilder.appConfig(environment: ApplicationEnvironment) {
     bind<JWTVerifier>() with eagerSingleton { JWT.require(instance()).build() }
     bind<JWTService>() with eagerSingleton { JWTServiceImpl(instance()) }
 
-    bind<PostRepository>() with eagerSingleton { PostRepositoryConcurrentHashMap() }
-    bind<UserRepository>() with eagerSingleton { UserRepositoryConcurrentHashMap() }
+    bind<PostRepository>() with eagerSingleton { PostRepositoryCHM() }
+    bind<PostFavoriteRepository>() with eagerSingleton { PostFavoriteRepositoryCHM() }
+    bind<PostShareRepository>() with eagerSingleton { PostShareRepositoryCHM() }
+    bind<UserRepository>() with eagerSingleton { UserRepositoryCHM() }
 
-    bind<PostService>() with eagerSingleton { PostServiceImpl(instance()) }
+    bind<PostService>() with eagerSingleton { PostServiceImpl(instance(), instance(), instance()) }
     bind<UserService>() with eagerSingleton { UserServiceImpl(instance(), instance(), instance()) }
     bind<FileService>() with eagerSingleton { FileServiceImpl(instance(tag = "uploadDir")) }
 }
