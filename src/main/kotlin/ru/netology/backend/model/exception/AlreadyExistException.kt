@@ -2,4 +2,6 @@ package ru.netology.backend.model.exception
 
 import java.util.*
 
-class AlreadyExistException(id: UUID) : RuntimeException("Post with id: $id already exist!")
+class AlreadyExistException(message: String) : RuntimeException(message) {
+    constructor(id: UUID) : this("Post with id: $id already exist!")
+}

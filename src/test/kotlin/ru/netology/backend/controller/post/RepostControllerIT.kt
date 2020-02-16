@@ -1,48 +1,43 @@
 package ru.netology.backend.controller.post
 
 import com.jayway.jsonpath.JsonPath
-import io.ktor.application.Application
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
 import org.junit.Test
+import ru.netology.backend.addAuthToken
 import ru.netology.backend.config.UUIDPatternString
-import ru.netology.backend.config.module
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import ru.netology.backend.withTestApplication
+import kotlin.test.*
 
 class RepostControllerIT {
 
     @Test
-    fun `Create Repost Null Original`() = withTestApplication(Application::module) {
+    fun `Create Repost Null Original`() = withTestApplication {
         val rq = """
         {
-            "createdUser": "Netology Group Company"
         }
         """.trimIndent()
 
         with(
             handleRequest(HttpMethod.Post, "/api/v1/repost") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(rq)
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("original: не должно равняться null", response.content)
+            assertEquals("original: не должно равняться null", JsonPath.read(response.content, "$.error"))
         }
     }
 
     @Test
-    fun `Create Repost Not Exist Original`() = withTestApplication(Application::module) {
+    fun `Create Repost Not Exist Original`() = withTestApplication {
         val rq = """
         {
-            "createdUser": "Netology Group Company",
             "original": "46813418-0f33-4f2b-88ac-be4ca4b67ee8"
         }
         """.trimIndent()
@@ -50,23 +45,25 @@ class RepostControllerIT {
         with(
             handleRequest(HttpMethod.Post, "/api/v1/repost") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(rq)
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
             assertEquals(
                 "Original Post Not Found",
-                response.content
+                JsonPath.read(response.content, "$.error")
             )
         }
     }
 
     @Test
-    fun `Create Repost`() = withTestApplication(Application::module) {
+    fun `Create Repost`() = withTestApplication {
         var original: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken("vasya")
                 setBody(this.javaClass.getResource("/create-post.json").readText())
             }
         ) {
@@ -76,55 +73,57 @@ class RepostControllerIT {
 
         val rq = """
         {
-            "createdUser": "Netology Group Company",
             "original": "$original"
         }
         """.trimIndent()
 
-        var repost: String
+        var repostId: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/repost") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(rq)
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
 
-            val json = response.content
-            repost = JsonPath.read(json, "$.id")
+            val rs = response.content
+            repostId = JsonPath.read(rs, "$.id")
 
-            assertEquals("Netology Group Company", JsonPath.read(json, "$.createdUser"))
-            assertEquals("", JsonPath.read(json, "$.content"))
-            assertNotNull(JsonPath.read<Long>(json, "$.createTime"))
-            assertEquals(0, JsonPath.read(json, "$.favorite"))
-            assertEquals(0, JsonPath.read(json, "$.comment"))
-            assertEquals(0, JsonPath.read(json, "$.share"))
-            assertFalse(JsonPath.read(json, "$.favoriteByMe"))
-            assertFalse(JsonPath.read(json, "$.shareByMe"))
-            assertEquals("", JsonPath.read(json, "$.address"))
-            assertEquals(original, JsonPath.read(json, "$.original"))
-            assertTrue(JsonPath.read<String>(json, "$.id").matches(Regex(UUIDPatternString)))
-            assertEquals(0, JsonPath.read(json, "$.views"))
+            assertEquals("vasya", JsonPath.read(rs, "$.createdUser"))
+            assertEquals("", JsonPath.read(rs, "$.content"))
+            assertNotNull(JsonPath.read<Long>(rs, "$.createTime"))
+            assertEquals(0, JsonPath.read(rs, "$.favorite"))
+            assertEquals(0, JsonPath.read(rs, "$.comment"))
+            assertEquals(0, JsonPath.read(rs, "$.share"))
+            assertFalse(JsonPath.read(rs, "$.favoriteByMe"))
+            assertFalse(JsonPath.read(rs, "$.shareByMe"))
+            assertNull(JsonPath.read(rs, "$.location"))
+            assertEquals("", JsonPath.read(rs, "$.address"))
+            assertNull(JsonPath.read(rs, "$.commercialContent"))
+            assertEquals(original, JsonPath.read(rs, "$.original"))
+            assertTrue(JsonPath.read<String>(rs, "$.id").matches(Regex(UUIDPatternString)))
+            assertEquals(0, JsonPath.read(rs, "$.views"))
         }
 
         with(
-            handleRequest(HttpMethod.Delete, "/api/v1/post/$repost") {
+            handleRequest(HttpMethod.Delete, "/api/v1/post/$repostId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
-            val json = response.content
-            assertTrue(JsonPath.read(json, "$"))
+            assertTrue(JsonPath.read(response.content, "$"))
         }
 
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/$original") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
-            val json = response.content
-            assertTrue(JsonPath.read(json, "$"))
+            assertTrue(JsonPath.read(response.content, "$"))
         }
     }
 }

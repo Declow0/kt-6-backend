@@ -1,4 +1,4 @@
-package ru.netology.backend.model.dto
+package ru.netology.backend.model.dto.rs
 
 import com.google.gson.annotations.JsonAdapter
 import ru.netology.backend.model.Location
@@ -36,15 +36,22 @@ data class PostRsDto(
     val views: AtomicInteger = AtomicInteger()
 ) {
     companion object {
-        fun fromModel(post: Post): PostRsDto = PostRsDto(
+        fun fromModel(
+            post: Post,
+            favoriteCount: Long = 0,
+            favoriteByMe: Boolean = false,
+            commentCount: Long = 0,
+            shareCount: Long = 0,
+            shareByMe: Boolean = false
+        ): PostRsDto = PostRsDto(
             createdUser = post.createdUser,
             content = post.content,
             createTime = post.createTime,
-            favorite = post.favorite,
-            comment = post.comment,
-            share = post.share,
-            favoriteByMe = post.favoriteByMe,
-            shareByMe = post.shareByMe,
+            favorite = favoriteCount,
+            comment = commentCount,
+            share = shareCount,
+            favoriteByMe = favoriteByMe,
+            shareByMe = shareByMe,
             address = post.address,
             location = post.location,
             youtubeId = post.youtubeId,

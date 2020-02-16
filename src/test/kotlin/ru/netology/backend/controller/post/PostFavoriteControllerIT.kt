@@ -1,7 +1,6 @@
-package ru.netology.backend.controller.post.attribute
+package ru.netology.backend.controller.post
 
 import com.jayway.jsonpath.JsonPath
-import io.ktor.application.Application
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -9,9 +8,9 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
 import org.junit.Test
-import ru.netology.backend.config.module
+import ru.netology.backend.addAuthToken
+import ru.netology.backend.withTestApplication
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -25,6 +24,7 @@ class PostFavoriteControllerIT {
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(this.javaClass.getResource("/create-post.json").readText())
             }
         ) {
@@ -38,6 +38,7 @@ class PostFavoriteControllerIT {
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -45,11 +46,12 @@ class PostFavoriteControllerIT {
     }
 
     @Test
-    fun `Add Favorite`() = withTestApplication(Application::module) {
+    fun `Add Favorite`() = withTestApplication {
         `Create Post`()
         with(
             handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -60,11 +62,12 @@ class PostFavoriteControllerIT {
     }
 
     @Test
-    fun `Add Favorite Twice`() = withTestApplication(Application::module) {
+    fun `Add Favorite Twice`() = withTestApplication {
         `Create Post`()
         with(
             handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -75,20 +78,22 @@ class PostFavoriteControllerIT {
         with(
             handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("Already favorite", response.content)
+            assertEquals("Already favorite", JsonPath.read(response.content, "$.error"))
         }
         `Delete Post`()
     }
 
     @Test
-    fun `Unfavorite`() = withTestApplication(Application::module) {
+    fun Unfavorite() = withTestApplication {
         `Create Post`()
         with(
             handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -99,6 +104,7 @@ class PostFavoriteControllerIT {
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -109,15 +115,43 @@ class PostFavoriteControllerIT {
     }
 
     @Test
-    fun `Unfavorite when not favoriteByMe`() = withTestApplication(Application::module) {
+    fun `Unfavorite when not favoriteByMe`() = withTestApplication {
         `Create Post`()
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("Already unfavorite", response.content)
+            assertEquals("Already unfavorite", JsonPath.read(response.content, "$.error"))
+        }
+        `Delete Post`()
+    }
+
+    @Test
+    fun `Add Favorite Two Users`() = withTestApplication {
+        `Create Post`()
+        with(
+            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken("vasya")
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(1, JsonPath.read(response.content, "$.favorite"))
+            assertTrue(JsonPath.read(response.content, "$.favoriteByMe"))
+        }
+
+        with(
+            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken("kolya")
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(2, JsonPath.read(response.content, "$.favorite"))
+            assertTrue(JsonPath.read(response.content, "$.favoriteByMe"))
         }
         `Delete Post`()
     }

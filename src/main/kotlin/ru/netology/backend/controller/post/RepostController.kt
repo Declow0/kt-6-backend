@@ -2,6 +2,7 @@ package ru.netology.backend.controller.post
 
 import io.ktor.application.Application
 import io.ktor.application.call
+import io.ktor.auth.principal
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -9,45 +10,20 @@ import io.ktor.routing.post
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.validate
-import ru.netology.backend.model.Post
-import ru.netology.backend.model.dto.PostRsDto
-import ru.netology.backend.model.dto.RepostRqDto
-import ru.netology.backend.model.exception.BadRequestException
-import ru.netology.backend.model.exception.NotFoundException
-import ru.netology.backend.repository.PostRepository
-import java.util.*
+import ru.netology.backend.model.dto.rq.RepostRqDto
+import ru.netology.backend.service.PostService
 import javax.validation.Validator
 
 class RepostController(application: Application) : AbstractKodeinController(application) {
-    private val repo by kodein.instance<PostRepository>()
+    private val postService by kodein.instance<PostService>()
     private val validator by kodein.instance<Validator>()
 
     override fun Route.getRoutes() {
         post {
-            val repost = call.receive<RepostRqDto>()
+            val repost = call.receive(RepostRqDto::class)
             repost.validate(validator)
-            val uuid = UUID.fromString(repost.original)
-            try {
-                repo.get(uuid)
-            } catch (e: NotFoundException) {
-                throw BadRequestException("Original Post Not Found")
-            }
 
-            call.respond(
-                PostRsDto.fromModel(
-                    repo.put(
-                        Post(
-                            createdUser = repost.createdUser,
-                            content = repost.content,
-                            address = repost.address,
-                            location = repost.location,
-                            youtubeId = repost.youtubeId,
-                            commercialContent = if (repost.commercialContent != null) java.net.URL(repost.commercialContent) else null,
-                            original = uuid
-                        )
-                    )
-                )
-            )
+            call.respond(postService.repost(repost, call.principal()!!))
         }
     }
 }

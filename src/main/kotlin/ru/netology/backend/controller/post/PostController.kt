@@ -2,32 +2,27 @@ package ru.netology.backend.controller.post
 
 import io.ktor.application.Application
 import io.ktor.application.call
+import io.ktor.auth.principal
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.delete
-import io.ktor.routing.get
-import io.ktor.routing.post
+import io.ktor.routing.*
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.isUUID
 import ru.netology.backend.config.validate
-import ru.netology.backend.model.Post
-import ru.netology.backend.model.dto.PostRqDto
-import ru.netology.backend.model.dto.PostRsDto
-import ru.netology.backend.repository.PostRepository
+import ru.netology.backend.model.dto.rq.PostRqDto
+import ru.netology.backend.service.PostService
 import java.util.*
 import javax.validation.Validator
 
 class PostController(application: Application) : AbstractKodeinController(application) {
-    private val repo by kodein.instance<PostRepository>()
+    private val postService by kodein.instance<PostService>()
     private val validator by kodein.instance<Validator>()
 
     override fun Route.getRoutes() {
         get {
             call.respond(
-                repo.getAllAndView()
-                    .map(PostRsDto.Companion::fromModel)
+                postService.getAllAndView(call.principal()!!)
             )
         }
 
@@ -35,33 +30,31 @@ class PostController(application: Application) : AbstractKodeinController(applic
             val idInput = call.parameters["id"]
             idInput!!.isUUID()
             val id = UUID.fromString(idInput)
-            val post = repo.getAndView(id)
-
-            call.respond(PostRsDto.fromModel(post))
+            call.respond(postService.getAndView(id, call.principal()!!))
         }
 
         post {
-            val post = call.receive<PostRqDto>()
+            val post = call.receive(PostRqDto::class)
             post.validate(validator)
 
             call.respond(
-                repo.put(
-                    Post(
-                        createdUser = post.createdUser,
-                        content = post.content,
-                        address = post.address,
-                        location = post.location,
-                        youtubeId = post.youtubeId,
-                        commercialContent = if (post.commercialContent != null) java.net.URL(post.commercialContent) else null
-                    )
-                )
+                postService.put(post, call.principal()!!)
+            )
+        }
+
+        patch {
+            val post = call.receive(PostRqDto::class)
+            post.validate(validator)
+
+            call.respond(
+                postService.update(post, call.principal()!!)
             )
         }
 
         delete("/{id}") {
             val idInput = call.parameters["id"]
             idInput!!.isUUID()
-            repo.delete(UUID.fromString(idInput))
+            postService.delete(UUID.fromString(idInput), call.principal()!!)
 
             call.respond(true)
         }

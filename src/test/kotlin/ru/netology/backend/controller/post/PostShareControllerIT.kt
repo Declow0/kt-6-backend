@@ -1,7 +1,6 @@
-package ru.netology.backend.controller.post.attribute
+package ru.netology.backend.controller.post
 
 import com.jayway.jsonpath.JsonPath
-import io.ktor.application.Application
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -9,9 +8,9 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
 import org.junit.Test
-import ru.netology.backend.config.module
+import ru.netology.backend.addAuthToken
+import ru.netology.backend.withTestApplication
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -24,6 +23,7 @@ class PostShareControllerIT {
         with(
             handleRequest(HttpMethod.Post, "/api/v1/post") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
                 setBody(this.javaClass.getResource("/create-post.json").readText())
             }
         ) {
@@ -37,6 +37,7 @@ class PostShareControllerIT {
         with(
             handleRequest(HttpMethod.Delete, "/api/v1/post/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -44,11 +45,12 @@ class PostShareControllerIT {
     }
 
     @Test
-    fun `Add Share`() = withTestApplication(Application::module) {
+    fun `Add Share`() = withTestApplication {
         `Create Post`()
         with(
             handleRequest(HttpMethod.Put, "/api/v1/post/share/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -59,11 +61,12 @@ class PostShareControllerIT {
     }
 
     @Test
-    fun `Add Share Twice`() = withTestApplication(Application::module) {
+    fun `Add Share Twice`() = withTestApplication {
         `Create Post`()
         with(
             handleRequest(HttpMethod.Put, "/api/v1/post/share/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -74,10 +77,11 @@ class PostShareControllerIT {
         with(
             handleRequest(HttpMethod.Put, "/api/v1/post/share/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
-            assertEquals("Already share", response.content)
+            assertEquals("Already share", JsonPath.read(response.content, "$.error"))
         }
         `Delete Post`()
     }
