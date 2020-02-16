@@ -28,8 +28,8 @@ fun <R> withTestApplication(
     application.module()
     val userService by application.kodein().instance<UserService>()
     runBlocking {
-        userService.register(User("vasya", "password"))
-        userService.register(User("kolya", "password"))
+        userService.register(User("vasya", "1aD23dsf"))
+        userService.register(User("kolya", "1aD23dse"))
     }
     test()
 }

@@ -1,4 +1,4 @@
-package ru.netology.backend.model.dto
+package ru.netology.backend.model.dto.rq
 
 import org.hibernate.validator.constraints.URL
 import ru.netology.backend.config.UUIDPatternString

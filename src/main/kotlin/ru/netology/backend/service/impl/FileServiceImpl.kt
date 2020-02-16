@@ -8,6 +8,7 @@ import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ru.netology.backend.model.dto.rs.MediaRs
 import ru.netology.backend.model.exception.BadRequestException
 import ru.netology.backend.service.FileService
 import java.nio.file.Files
@@ -24,8 +25,8 @@ class FileServiceImpl(private val uploadPath: String) : FileService {
         }
     }
 
-    override suspend fun save(multipart: MultiPartData): String {
-        var response: String? = null
+    override suspend fun save(multipart: MultiPartData): MediaRs {
+        var response: MediaRs? = null
         multipart.forEachPart { part ->
             when (part) {
                 is PartData.FileItem -> {
@@ -46,7 +47,7 @@ class FileServiceImpl(private val uploadPath: String) : FileService {
                             }
                         }
                         part.dispose()
-                        response = fileUUID
+                        response = MediaRs(fileUUID)
                         return@forEachPart
                     }
                 }

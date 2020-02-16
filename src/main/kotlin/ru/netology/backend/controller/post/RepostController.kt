@@ -10,7 +10,7 @@ import io.ktor.routing.post
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.validate
-import ru.netology.backend.model.dto.RepostRqDto
+import ru.netology.backend.model.dto.rq.RepostRqDto
 import ru.netology.backend.service.PostService
 import javax.validation.Validator
 

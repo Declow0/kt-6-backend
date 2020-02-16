@@ -4,6 +4,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.springframework.security.crypto.password.PasswordEncoder
 import ru.netology.backend.model.User
+import ru.netology.backend.model.dto.rs.TokenRsDto
 import ru.netology.backend.model.exception.AlreadyExistException
 import ru.netology.backend.model.exception.InvalidPasswordException
 import ru.netology.backend.model.exception.NotFoundException
@@ -22,7 +23,7 @@ class UserServiceImpl(
         userRepository.get(username) ?: throw NotFoundException("Not Found User with username: $username")
 
 
-    override suspend fun register(user: User): String {
+    override suspend fun register(user: User): TokenRsDto {
         mutex.withLock {
             val userInRepo = userRepository.get(user.username)
             if (userInRepo != null) {
@@ -33,16 +34,16 @@ class UserServiceImpl(
                 user.copy(password = passwordEncoder.encode(user.password))
             )
 
-            return jwtService.generateAuthToken(user.username)
+            return TokenRsDto(jwtService.generateAuthToken(user.username))
         }
     }
 
-    override fun authenticate(user: User): String {
+    override fun authenticate(user: User): TokenRsDto {
         val userInRepo = get(user.username)
         if (!passwordEncoder.matches(user.password, userInRepo.password)) {
             throw InvalidPasswordException("Wrong password!")
         }
 
-        return jwtService.generateAuthToken(user.username)
+        return TokenRsDto(jwtService.generateAuthToken(user.username))
     }
 }

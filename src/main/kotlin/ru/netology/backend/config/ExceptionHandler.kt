@@ -5,36 +5,40 @@ import io.ktor.features.StatusPages
 import io.ktor.features.UnsupportedMediaTypeException
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
-import ru.netology.backend.model.dto.ErrorMessageDto
+import ru.netology.backend.model.dto.rs.ErrorMessageRsDto
 import ru.netology.backend.model.exception.*
 
 fun StatusPages.Configuration.exceptionHandler() {
     exception<BadRequestException> {
-        call.respond(HttpStatusCode.BadRequest, ErrorMessageDto(it.getMessage()))
+        call.respond(HttpStatusCode.BadRequest, ErrorMessageRsDto(it.getMessage()))
     }
 
     exception<UnsupportedMediaTypeException> {
-        call.respond(HttpStatusCode.UnsupportedMediaType, ErrorMessageDto(it.getMessage()))
+        call.respond(HttpStatusCode.UnsupportedMediaType,
+            ErrorMessageRsDto(it.getMessage())
+        )
     }
 
     exception<AlreadyExistException> {
-        call.respond(HttpStatusCode.BadRequest, ErrorMessageDto(it.getMessage()))
+        call.respond(HttpStatusCode.BadRequest, ErrorMessageRsDto(it.getMessage()))
     }
 
     exception<NotFoundException> {
-        call.respond(HttpStatusCode.NotFound, ErrorMessageDto(it.getMessage()))
+        call.respond(HttpStatusCode.NotFound, ErrorMessageRsDto(it.getMessage()))
     }
 
     exception<AccessDeniedException> {
-        call.respond(HttpStatusCode.Forbidden, ErrorMessageDto(it.getMessage()))
+        call.respond(HttpStatusCode.Forbidden, ErrorMessageRsDto(it.getMessage()))
     }
 
     exception<InvalidPasswordException> {
-        call.respond(HttpStatusCode.Forbidden, ErrorMessageDto(it.getMessage()))
+        call.respond(HttpStatusCode.Forbidden, ErrorMessageRsDto(it.getMessage()))
     }
 
     exception<Throwable> {
-        call.respond(HttpStatusCode.InternalServerError, ErrorMessageDto(it.getMessage()))
+        call.respond(HttpStatusCode.InternalServerError,
+            ErrorMessageRsDto(it.getMessage())
+        )
     }
 }
 

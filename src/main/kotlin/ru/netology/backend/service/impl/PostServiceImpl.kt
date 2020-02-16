@@ -4,9 +4,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.netology.backend.model.Post
 import ru.netology.backend.model.User
-import ru.netology.backend.model.dto.PostRqDto
-import ru.netology.backend.model.dto.PostRsDto
-import ru.netology.backend.model.dto.RepostRqDto
+import ru.netology.backend.model.dto.rq.PostRqDto
+import ru.netology.backend.model.dto.rs.PostRsDto
+import ru.netology.backend.model.dto.rq.RepostRqDto
 import ru.netology.backend.model.exception.AccessDeniedException
 import ru.netology.backend.model.exception.AlreadyExistException
 import ru.netology.backend.model.exception.BadRequestException

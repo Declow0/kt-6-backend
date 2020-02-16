@@ -10,7 +10,7 @@ import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.isUUID
 import ru.netology.backend.config.validate
-import ru.netology.backend.model.dto.PostRqDto
+import ru.netology.backend.model.dto.rq.PostRqDto
 import ru.netology.backend.service.PostService
 import java.util.*
 import javax.validation.Validator

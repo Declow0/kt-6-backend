@@ -1,4 +1,4 @@
-package ru.netology.backend.model.dto
+package ru.netology.backend.model.dto.rs
 
 import com.google.gson.annotations.JsonAdapter
 import ru.netology.backend.model.Location
