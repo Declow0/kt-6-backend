@@ -19,6 +19,7 @@ fun Application.module() {
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
+            serializeNulls()
         }
     }
 

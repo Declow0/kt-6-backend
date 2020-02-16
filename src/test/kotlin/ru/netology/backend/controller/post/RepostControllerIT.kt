@@ -11,10 +11,7 @@ import org.junit.Test
 import ru.netology.backend.addAuthToken
 import ru.netology.backend.config.UUIDPatternString
 import ru.netology.backend.withTestApplication
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class RepostControllerIT {
 
@@ -80,7 +77,7 @@ class RepostControllerIT {
         }
         """.trimIndent()
 
-        var repost: String
+        var repostId: String
         with(
             handleRequest(HttpMethod.Post, "/api/v1/repost") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -90,32 +87,33 @@ class RepostControllerIT {
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
 
-            val json = response.content
-            repost = JsonPath.read(json, "$.id")
+            val rs = response.content
+            repostId = JsonPath.read(rs, "$.id")
 
-            assertEquals("vasya", JsonPath.read(json, "$.createdUser"))
-            assertEquals("", JsonPath.read(json, "$.content"))
-            assertNotNull(JsonPath.read<Long>(json, "$.createTime"))
-            assertEquals(0, JsonPath.read(json, "$.favorite"))
-            assertEquals(0, JsonPath.read(json, "$.comment"))
-            assertEquals(0, JsonPath.read(json, "$.share"))
-            assertFalse(JsonPath.read(json, "$.favoriteByMe"))
-            assertFalse(JsonPath.read(json, "$.shareByMe"))
-            assertEquals("", JsonPath.read(json, "$.address"))
-            assertEquals(original, JsonPath.read(json, "$.original"))
-            assertTrue(JsonPath.read<String>(json, "$.id").matches(Regex(UUIDPatternString)))
-            assertEquals(0, JsonPath.read(json, "$.views"))
+            assertEquals("vasya", JsonPath.read(rs, "$.createdUser"))
+            assertEquals("", JsonPath.read(rs, "$.content"))
+            assertNotNull(JsonPath.read<Long>(rs, "$.createTime"))
+            assertEquals(0, JsonPath.read(rs, "$.favorite"))
+            assertEquals(0, JsonPath.read(rs, "$.comment"))
+            assertEquals(0, JsonPath.read(rs, "$.share"))
+            assertFalse(JsonPath.read(rs, "$.favoriteByMe"))
+            assertFalse(JsonPath.read(rs, "$.shareByMe"))
+            assertNull(JsonPath.read(rs, "$.location"))
+            assertEquals("", JsonPath.read(rs, "$.address"))
+            assertNull(JsonPath.read(rs, "$.commercialContent"))
+            assertEquals(original, JsonPath.read(rs, "$.original"))
+            assertTrue(JsonPath.read<String>(rs, "$.id").matches(Regex(UUIDPatternString)))
+            assertEquals(0, JsonPath.read(rs, "$.views"))
         }
 
         with(
-            handleRequest(HttpMethod.Delete, "/api/v1/post/$repost") {
+            handleRequest(HttpMethod.Delete, "/api/v1/post/$repostId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken()
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
-            val json = response.content
-            assertTrue(JsonPath.read(json, "$"))
+            assertTrue(JsonPath.read(response.content, "$"))
         }
 
         with(
@@ -125,8 +123,7 @@ class RepostControllerIT {
             }
         ) {
             assertEquals(HttpStatusCode.OK, response.status())
-            val json = response.content
-            assertTrue(JsonPath.read(json, "$"))
+            assertTrue(JsonPath.read(response.content, "$"))
         }
     }
 }

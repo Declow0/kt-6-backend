@@ -88,7 +88,7 @@ class PostFavoriteControllerIT {
     }
 
     @Test
-    fun `Unfavorite`() = withTestApplication {
+    fun Unfavorite() = withTestApplication {
         `Create Post`()
         with(
             handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
@@ -125,6 +125,33 @@ class PostFavoriteControllerIT {
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
             assertEquals("Already unfavorite", JsonPath.read(response.content, "$.error"))
+        }
+        `Delete Post`()
+    }
+
+    @Test
+    fun `Add Favorite Two Users`() = withTestApplication {
+        `Create Post`()
+        with(
+            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken("vasya")
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(1, JsonPath.read(response.content, "$.favorite"))
+            assertTrue(JsonPath.read(response.content, "$.favoriteByMe"))
+        }
+
+        with(
+            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                addAuthToken("kolya")
+            }
+        ) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals(2, JsonPath.read(response.content, "$.favorite"))
+            assertTrue(JsonPath.read(response.content, "$.favoriteByMe"))
         }
         `Delete Post`()
     }

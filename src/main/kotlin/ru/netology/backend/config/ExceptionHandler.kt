@@ -6,10 +6,7 @@ import io.ktor.features.UnsupportedMediaTypeException
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import ru.netology.backend.model.dto.ErrorMessageDto
-import ru.netology.backend.model.exception.AlreadyExistException
-import ru.netology.backend.model.exception.BadRequestException
-import ru.netology.backend.model.exception.InvalidPasswordException
-import ru.netology.backend.model.exception.NotFoundException
+import ru.netology.backend.model.exception.*
 
 fun StatusPages.Configuration.exceptionHandler() {
     exception<BadRequestException> {
