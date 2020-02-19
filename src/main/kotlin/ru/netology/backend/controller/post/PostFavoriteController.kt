@@ -6,7 +6,7 @@ import io.ktor.auth.principal
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.delete
-import io.ktor.routing.put
+import io.ktor.routing.patch
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.controller.AbstractKodeinController
 import ru.netology.backend.config.isUUID
@@ -17,7 +17,7 @@ class PostFavoriteController(application: Application) : AbstractKodeinControlle
     private val postService by kodein.instance<PostService>()
 
     override fun Route.getRoutes() {
-        put("/{id}") {
+        patch("/{id}") {
             val idInput = call.parameters["id"]
             idInput!!.isUUID()
 

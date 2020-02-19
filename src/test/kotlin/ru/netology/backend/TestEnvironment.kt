@@ -19,6 +19,7 @@ fun testEnvironment() = createTestEnvironment {
     (config as MapApplicationConfig).apply {
         put("application.upload.dir", Files.createTempDirectory("uploads").toString())
         put("application.jwt.secret", "5c2dbef6-289c-46e6-8cfd-d8b3292d373a")
+        put("application.jwt.ttl", "10000000")
     }
 }
 

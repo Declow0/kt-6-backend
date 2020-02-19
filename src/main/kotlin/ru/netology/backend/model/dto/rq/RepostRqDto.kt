@@ -13,13 +13,13 @@ data class RepostRqDto(
     val address: String = "",
     val location: Location? = null,
 
-    @field:Pattern(regexp = youTubeIDPatternString)
+    @field:Pattern(regexp = youTubeIDPatternString, message = "{ru.netology.backend.model.dto.youtube.message}")
     val youtubeId: String? = null,
 
     @field:URL
     val commercialContent: String? = null,
 
     @field:NotNull
-    @field:Pattern(regexp = UUIDPatternString)
+    @field:Pattern(regexp = UUIDPatternString, message = "{ru.netology.backend.model.dto.uuid.message}")
     val original: String? = null
 )

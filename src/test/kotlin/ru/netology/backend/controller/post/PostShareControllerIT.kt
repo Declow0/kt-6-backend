@@ -48,7 +48,7 @@ class PostShareControllerIT {
     fun `Add Share`() = withTestApplication {
         `Create Post`()
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/share/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/share/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken()
             }
@@ -64,7 +64,7 @@ class PostShareControllerIT {
     fun `Add Share Twice`() = withTestApplication {
         `Create Post`()
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/share/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/share/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken()
             }
@@ -75,7 +75,7 @@ class PostShareControllerIT {
         }
 
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/share/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/share/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken()
             }

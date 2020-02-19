@@ -72,7 +72,7 @@ class UserControllerIT {
                 )
             }
         ) {
-            assertEquals(HttpStatusCode.Forbidden, response.status())
+            assertEquals(HttpStatusCode.Unauthorized, response.status())
             assertEquals("Wrong password!", JsonPath.read(response.content, "$.error"))
         }
 

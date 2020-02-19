@@ -48,13 +48,14 @@ import javax.validation.Validator
 fun Kodein.MainBuilder.appConfig(environment: ApplicationEnvironment) {
     constant("uploadDir") with environment.config.property("application.upload.dir").getString()
     constant("jwtSecret") with environment.config.property("application.jwt.secret").getString()
+    constant("jwtTTL") with environment.config.property("application.jwt.ttl").getString().toLong()
 
     bind<Validator>() with eagerSingleton { Validation.buildDefaultValidatorFactory().validator }
 
     bind<PasswordEncoder>() with eagerSingleton { BCryptPasswordEncoder() }
     bind<Algorithm>() with eagerSingleton { Algorithm.HMAC256(instance<String>(tag = "jwtSecret")) }
     bind<JWTVerifier>() with eagerSingleton { JWT.require(instance()).build() }
-    bind<JWTService>() with eagerSingleton { JWTServiceImpl(instance()) }
+    bind<JWTService>() with eagerSingleton { JWTServiceImpl(instance(), instance(tag = "jwtTTL")) }
 
     bind<PostRepository>() with eagerSingleton { PostRepositoryCHM() }
     bind<PostFavoriteRepository>() with eagerSingleton { PostFavoriteRepositoryCHM() }
