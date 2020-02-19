@@ -23,7 +23,7 @@ fun <T : Any> T.validate(validator: Validator) {
 
 val UUIDPattern = Pattern.compile(UUIDPatternString)
 fun String.isUUID() {
-    if (!UUIDPattern.matcher(this).matches()) {
+    if (this.isEmpty() && !UUIDPattern.matcher(this).matches()) {
         throw BadRequestException("Invalid UUID string: $this")
     }
 }

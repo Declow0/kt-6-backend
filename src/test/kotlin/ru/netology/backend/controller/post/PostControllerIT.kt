@@ -85,7 +85,7 @@ class PostControllerIT {
         ) {
             assertEquals(HttpStatusCode.BadRequest, response.status())
             assertEquals(
-                "youtubeId: должно соответствовать \"^[a-zA-Z0-9_-]{11}\$\"",
+                "youtubeId: Некоректный формат индентификатора YouTube видео",
                 JsonPath.read(response.content, "$.error")
             )
         }
@@ -110,12 +110,11 @@ class PostControllerIT {
         val editedPost =
             """
             {
-                "content": "Новый текст. Ничего лишнего.",
-                "id": "$id"
+                "content": "Новый текст. Ничего лишнего."
             }
         """.trimIndent()
         with(
-            handleRequest(HttpMethod.Patch, "/api/v1/post") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken("vasya")
                 setBody(editedPost)
@@ -170,12 +169,11 @@ class PostControllerIT {
         val editedPost =
             """
             {
-                "content": "Новый текст. Ничего лишнего.",
-                "id": "$id"
+                "content": "Новый текст. Ничего лишнего."
             }
         """.trimIndent()
         with(
-            handleRequest(HttpMethod.Patch, "/api/v1/post") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/$id") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken("kolya")
                 setBody(editedPost)

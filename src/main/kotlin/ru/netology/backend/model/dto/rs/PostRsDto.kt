@@ -18,7 +18,7 @@ data class PostRsDto(
     val createTime: LocalDateTime = LocalDateTime.now(),
 
     val favorite: Long = 0L,
-    val comment: Long = 0L,
+    val repost: Long = 0L,
     val share: Long = 0L,
 
     val favoriteByMe: Boolean = false,
@@ -33,14 +33,13 @@ data class PostRsDto(
 
     val original: UUID? = null,
     val id: UUID = UUID.randomUUID(),
-    val views: AtomicInteger = AtomicInteger()
+    val views: Long = 0L
 ) {
     companion object {
         fun fromModel(
             post: Post,
             favoriteCount: Long = 0,
             favoriteByMe: Boolean = false,
-            commentCount: Long = 0,
             shareCount: Long = 0,
             shareByMe: Boolean = false
         ): PostRsDto = PostRsDto(
@@ -48,7 +47,7 @@ data class PostRsDto(
             content = post.content,
             createTime = post.createTime,
             favorite = favoriteCount,
-            comment = commentCount,
+            repost = post.repost.get(),
             share = shareCount,
             favoriteByMe = favoriteByMe,
             shareByMe = shareByMe,
@@ -58,7 +57,7 @@ data class PostRsDto(
             commercialContent = post.commercialContent,
             original = post.original,
             id = post.id,
-            views = post.views
+            views = post.views.get()
         )
     }
 }

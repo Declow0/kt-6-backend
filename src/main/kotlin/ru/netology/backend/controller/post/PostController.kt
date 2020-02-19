@@ -42,12 +42,15 @@ class PostController(application: Application) : AbstractKodeinController(applic
             )
         }
 
-        patch {
+        patch("/{id}") {
+            val idInput = call.parameters["id"]
+            idInput!!.isUUID()
+
             val post = call.receive(PostRqDto::class)
             post.validate(validator)
 
             call.respond(
-                postService.update(post, call.principal()!!)
+                postService.update(UUID.fromString(idInput), post, call.principal()!!)
             )
         }
 

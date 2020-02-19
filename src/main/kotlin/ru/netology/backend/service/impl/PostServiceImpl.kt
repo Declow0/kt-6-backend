@@ -1,12 +1,10 @@
 package ru.netology.backend.service.impl
 
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import ru.netology.backend.model.Post
 import ru.netology.backend.model.User
 import ru.netology.backend.model.dto.rq.PostRqDto
-import ru.netology.backend.model.dto.rs.PostRsDto
 import ru.netology.backend.model.dto.rq.RepostRqDto
+import ru.netology.backend.model.dto.rs.PostRsDto
 import ru.netology.backend.model.exception.AccessDeniedException
 import ru.netology.backend.model.exception.AlreadyExistException
 import ru.netology.backend.model.exception.BadRequestException
@@ -23,7 +21,6 @@ class PostServiceImpl(
     private val postFavoriteRepository: PostFavoriteRepository,
     private val postShareRepository: PostShareRepository
 ) : PostService {
-    private val mutex = Mutex()
 
     override fun getAllAndView(currentUser: User): List<PostRsDto> {
         return postRepository.getAll()
@@ -43,8 +40,6 @@ class PostServiceImpl(
             post = post,
             favoriteCount = postFavoriteRepository.getFavoriteCount(post.id),
             favoriteByMe = postFavoriteRepository.isFavoriteByUser(post.id, currentUser.username),
-            // TODO Comments Repo
-            commentCount = 0L,
             shareCount = postShareRepository.getShareCount(post.id),
             shareByMe = postShareRepository.isShareByUser(post.id, currentUser.username)
         )
@@ -87,7 +82,9 @@ class PostServiceImpl(
             original = original
         )
 
-        return put(post, currentUser)
+        val postInRepo = put(post, currentUser)
+        postRepository.get(original)?.repost?.incrementAndGet()
+        return postInRepo
     }
 
     private fun put(post: Post, currentUser: User): PostRsDto {
@@ -99,72 +96,66 @@ class PostServiceImpl(
         return get(postRepository.put(post), currentUser)
     }
 
-    override suspend fun update(postRqDto: PostRqDto, currentUser: User): PostRsDto {
-        if (postRqDto.id == null) {
-            throw BadRequestException("Empty id param!")
-        }
-        val id = UUID.fromString(postRqDto.id)
+    override fun update(id: UUID, postRqDto: PostRqDto, currentUser: User): PostRsDto {
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         if (postInRepo.createdUser != currentUser.username) {
             throw AccessDeniedException("Can't change post of another user!")
         }
-        mutex.withLock(postInRepo) {
-            val post = postInRepo.copy(
-                content = postRqDto.content,
-                address = postRqDto.address,
-                location = postRqDto.location,
-                youtubeId = postRqDto.youtubeId,
-                commercialContent = if (postRqDto.commercialContent != null) URL(postRqDto.commercialContent) else null
-            )
 
-            return get(postRepository.put(post), currentUser)
-        }
+        val post = postInRepo.copy(
+            content = postRqDto.content,
+            address = postRqDto.address,
+            location = postRqDto.location,
+            youtubeId = postRqDto.youtubeId,
+            commercialContent = if (postRqDto.commercialContent != null) URL(postRqDto.commercialContent) else null
+        )
+
+        return get(postRepository.put(post), currentUser)
     }
 
-    override suspend fun delete(id: UUID, currentUser: User) {
+    override fun delete(id: UUID, currentUser: User) {
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
         if (postInRepo.createdUser != currentUser.username) {
             throw AccessDeniedException("Can't delete post of another user!")
         }
-        mutex.withLock(postInRepo) {
-            postRepository.delete(id)
-            deleteLinkedEntries(id)
+
+        if (postInRepo.original != null) {
+            postRepository.get(postInRepo.original)?.repost?.decrementAndGet()
+        }
+        postRepository.delete(id)
+        deleteLinkedEntries(id)
+    }
+
+    override fun favorite(id: UUID, currentUser: User): PostRsDto {
+        val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
+
+        if (!postFavoriteRepository.isFavoriteByUser(id, currentUser.username)) {
+            postFavoriteRepository.addFavorite(id, currentUser.username)
+            return get(postInRepo, currentUser)
+        } else {
+            throw BadRequestException("Already favorite")
         }
     }
 
-    override suspend fun favorite(id: UUID, currentUser: User): PostRsDto {
+    override fun unfavorite(id: UUID, currentUser: User): PostRsDto {
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
-        mutex.withLock(postInRepo) {
-            if (!postFavoriteRepository.isFavoriteByUser(id, currentUser.username)) {
-                postFavoriteRepository.addFavorite(id, currentUser.username)
-                return get(postInRepo, currentUser)
-            } else {
-                throw BadRequestException("Already favorite")
-            }
+
+        if (postFavoriteRepository.isFavoriteByUser(id, currentUser.username)) {
+            postFavoriteRepository.removeFavorite(id, currentUser.username)
+            return get(postInRepo, currentUser)
+        } else {
+            throw BadRequestException("Already unfavorite")
         }
     }
 
-    override suspend fun unfavorite(id: UUID, currentUser: User): PostRsDto {
+    override fun share(id: UUID, currentUser: User): PostRsDto {
         val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
-        mutex.withLock(postInRepo) {
-            if (postFavoriteRepository.isFavoriteByUser(id, currentUser.username)) {
-                postFavoriteRepository.removeFavorite(id, currentUser.username)
-                return get(postInRepo, currentUser)
-            } else {
-                throw BadRequestException("Already unfavorite")
-            }
-        }
-    }
 
-    override suspend fun share(id: UUID, currentUser: User): PostRsDto {
-        val postInRepo = postRepository.get(id) ?: throw NotFoundException(id)
-        mutex.withLock(postInRepo) {
-            if (!postShareRepository.isShareByUser(id, currentUser.username)) {
-                postShareRepository.addShare(id, currentUser.username)
-                return get(postInRepo, currentUser)
-            } else {
-                throw BadRequestException("Already share")
-            }
+        if (!postShareRepository.isShareByUser(id, currentUser.username)) {
+            postShareRepository.addShare(id, currentUser.username)
+            return get(postInRepo, currentUser)
+        } else {
+            throw BadRequestException("Already share")
         }
     }
 }

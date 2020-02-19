@@ -14,7 +14,8 @@ fun StatusPages.Configuration.exceptionHandler() {
     }
 
     exception<UnsupportedMediaTypeException> {
-        call.respond(HttpStatusCode.UnsupportedMediaType,
+        call.respond(
+            HttpStatusCode.UnsupportedMediaType,
             ErrorMessageRsDto(it.getMessage())
         )
     }
@@ -32,11 +33,12 @@ fun StatusPages.Configuration.exceptionHandler() {
     }
 
     exception<InvalidPasswordException> {
-        call.respond(HttpStatusCode.Forbidden, ErrorMessageRsDto(it.getMessage()))
+        call.respond(HttpStatusCode.Unauthorized, ErrorMessageRsDto(it.getMessage()))
     }
 
     exception<Throwable> {
-        call.respond(HttpStatusCode.InternalServerError,
+        call.respond(
+            HttpStatusCode.InternalServerError,
             ErrorMessageRsDto(it.getMessage())
         )
     }

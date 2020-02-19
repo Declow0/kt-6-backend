@@ -49,7 +49,7 @@ class PostFavoriteControllerIT {
     fun `Add Favorite`() = withTestApplication {
         `Create Post`()
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken()
             }
@@ -65,7 +65,7 @@ class PostFavoriteControllerIT {
     fun `Add Favorite Twice`() = withTestApplication {
         `Create Post`()
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken()
             }
@@ -76,7 +76,7 @@ class PostFavoriteControllerIT {
         }
 
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken()
             }
@@ -91,7 +91,7 @@ class PostFavoriteControllerIT {
     fun Unfavorite() = withTestApplication {
         `Create Post`()
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken()
             }
@@ -133,7 +133,7 @@ class PostFavoriteControllerIT {
     fun `Add Favorite Two Users`() = withTestApplication {
         `Create Post`()
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken("vasya")
             }
@@ -144,7 +144,7 @@ class PostFavoriteControllerIT {
         }
 
         with(
-            handleRequest(HttpMethod.Put, "/api/v1/post/favorite/$postId") {
+            handleRequest(HttpMethod.Patch, "/api/v1/post/favorite/$postId") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 addAuthToken("kolya")
             }
